@@ -68,17 +68,16 @@
               <div class="captcha-flex">
                 <el-input 
                   v-model="loginForm.captcha" 
-                  placeholder="区分大小写" 
+                  placeholder="输入验证码" 
                   maxlength="4"
                   size="large"
                 />
                 <div
-                  class="captcha-box"
+                  ref="captchaRef"
+                  class="captcha-svg"
                   title="点击刷新"
                   @click="refreshCaptcha"
-                >
-                  {{ captchaText }}
-                </div>
+                />
               </div>
             </el-form-item>
 
@@ -165,17 +164,20 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, watch, nextTick, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '../store/user';
+import { apiGetCaptcha } from '../api';
 import { ElMessage } from 'element-plus';
 
 const router = useRouter();
 const userStore = useUserStore();
 
 const loginFormRef = ref(null);
+const captchaRef = ref(null);
 const loading = ref(false);
-const captchaText = ref('');
+const captchaId = ref('');
+const captchaSvg = ref('');
 
 const loginForm = ref({
   username: '',
@@ -187,34 +189,33 @@ const loginForm = ref({
 const loginRules = {
   username: [{ required: true, message: '此项必填', trigger: 'blur' }],
   password: [{ required: true, message: '此项必填', trigger: 'blur' }],
-  captcha: [
-    { required: true, message: '此项必填', trigger: 'blur' },
-    {
-      validator: (rule, value, callback) => {
-        if (value.toLowerCase() !== captchaText.value.toLowerCase()) {
-          callback(new Error('验证码不匹配'));
-        } else {
-          callback();
-        }
-      },
-      trigger: 'blur'
+  captcha: [{ required: true, message: '此项必填', trigger: 'blur' }]
+};
+
+const refreshCaptcha = async () => {
+  try {
+    const data = await apiGetCaptcha();
+    if (data) {
+      captchaId.value = data.captchaId;
+      captchaSvg.value = data.svg;
     }
-  ]
-};
-
-const refreshCaptcha = () => {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let text = '';
-  for (let i = 0; i < 4; i++) {
-    text += chars.charAt(Math.floor(Math.random() * chars.length));
+  } catch {
+    ElMessage.error('验证码获取失败');
   }
-  captchaText.value = text;
 };
 
-const quickFill = (username) => {
+watch(captchaSvg, async (svg) => {
+  await nextTick();
+  if (captchaRef.value) {
+    captchaRef.value.innerHTML = svg || '';
+  }
+});
+
+const quickFill = async (username) => {
   loginForm.value.username = username;
   loginForm.value.password = '123456';
-  loginForm.value.captcha = captchaText.value;
+  await refreshCaptcha();
+  loginForm.value.captcha = '';
   handleLogin();
 };
 
@@ -223,7 +224,12 @@ const handleLogin = () => {
     if (valid) {
       loading.value = true;
       try {
-        const res = await userStore.login(loginForm.value.username, loginForm.value.password);
+        const res = await userStore.login(
+          loginForm.value.username,
+          loginForm.value.password,
+          captchaId.value,
+          loginForm.value.captcha
+        );
         if (res.code === 200) {
           ElMessage.success({ message: '欢迎回来', type: 'success' });
           router.push('/');
@@ -433,25 +439,18 @@ onMounted(() => {
   width: 100%;
 }
 
-.captcha-box {
+.captcha-svg {
   width: 120px;
   height: 48px;
-  background-color: var(--primary-light);
   border-radius: 8px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: 4px;
-  color: var(--text-main);
+  border: 1px solid var(--border-medium);
+  overflow: hidden;
   cursor: pointer;
-  user-select: none;
-  transition: background-color 0.2s;
+  flex-shrink: 0;
 }
-
-.captcha-box:hover {
-  background-color: var(--border-medium);
+.captcha-svg :deep(svg) {
+  width: 100%;
+  height: 100%;
 }
 
 .form-actions {

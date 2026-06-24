@@ -7,12 +7,15 @@ import com.icms.common.CustomException;
 import com.icms.common.Result;
 import com.icms.common.annotation.Log;
 import com.icms.entity.SysUser;
+import com.icms.security.CaptchaUtil;
+import com.icms.security.LoginLimiter;
 import com.icms.service.SysUserService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -34,14 +37,41 @@ public class AuthController {
     @Value("${icms.refresh-token.path:/api}")
     private String rfPath;
 
+    @GetMapping(value = "/captcha", produces = "image/svg+xml")
+    public String captcha() {
+        String captchaId = CaptchaUtil.newCaptchaId();
+        String svg = CaptchaUtil.generateSVG(captchaId);
+        return "<!--" + captchaId + "-->\n" + svg;
+    }
+
     @Log("用户登录")
     @PostMapping("/login")
     public Result<Map<String, Object>> login(@RequestBody Map<String, String> request,
+                                              HttpServletRequest httpRequest,
                                               HttpServletResponse response) {
         String username = request.get("username");
         String password = request.get("password");
+        String captchaId = request.get("captchaId");
+        String captchaCode = request.get("captchaCode");
+
+        String ip = httpRequest.getRemoteAddr();
+        String rateKey = LoginLimiter.buildKey(username, ip);
+
+        // 1. 频率限制检查
+        if (LoginLimiter.isBlocked(rateKey)) {
+            long sec = LoginLimiter.getBlockSeconds(rateKey);
+            throw new CustomException("登录尝试过于频繁，请 " + sec + " 秒后再试");
+        }
+
+        // 2. 验证码校验
+        if (captchaId == null || captchaCode == null || !CaptchaUtil.validate(captchaId, captchaCode)) {
+            LoginLimiter.recordFailure(rateKey);
+            throw new CustomException("验证码错误或已过期，请刷新重试");
+        }
 
         SysUser user = sysUserService.validateLogin(username, password);
+
+        LoginLimiter.clear(rateKey);
 
         StpUtil.login(user.getId(),
                 SaLoginConfig.setExtra("role", user.getUserType())

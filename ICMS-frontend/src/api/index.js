@@ -114,10 +114,24 @@ const logOperation = (username, operation, method, url, params, status, errorMsg
   });
 };
 
-// ==================== 1. 登录认证 ====================
-export const apiLogin = (username, password) => {
+// ==================== 验证码 ====================
+export const apiGetCaptcha = async () => {
   if (!USE_MOCK) {
-    return request.post('/api/auth/login', { username, password });
+    const res = await axios.get(import.meta.env.VITE_API_BASE_URL + '/api/auth/captcha', {
+      withCredentials: true,
+      responseType: 'text'
+    });
+    const text = res.data;
+    const match = text.match(/<!--([a-f0-9]+)-->/);
+    return match ? { captchaId: match[1], svg: text } : null;
+  }
+  return null;
+};
+
+// ==================== 1. 登录认证 ====================
+export const apiLogin = (username, password, captchaId, captchaCode) => {
+  if (!USE_MOCK) {
+    return request.post('/api/auth/login', { username, password, captchaId, captchaCode });
   }
   
   return mockRequest('login', () => {

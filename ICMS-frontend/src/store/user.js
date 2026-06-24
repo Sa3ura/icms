@@ -15,8 +15,8 @@ export const useUserStore = defineStore('user', {
     realName: (state) => state.userInfo?.real_name || '访客'
   },
   actions: {
-    async login(username, password) {
-      const res = await apiLogin(username, password);
+    async login(username, password, captchaId, captchaCode) {
+      const res = await apiLogin(username, password, captchaId, captchaCode);
       if (res.code === 200) {
         this.token = res.data.token;
         this.userInfo = res.data.userInfo;
