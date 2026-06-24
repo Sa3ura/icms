@@ -89,6 +89,8 @@
             placeholder="搜索设备编码/名称"
             clearable
             style="width: 180px"
+            @input="debouncedKeyword"
+            @clear="loadData"
           />
         </el-form-item>
         <el-form-item>
@@ -557,6 +559,15 @@ const formRef = ref(null);
 const faultFormRef = ref(null);
 
 const canEdit = computed(() => ['admin', 'jw'].includes(userStore.role));
+
+let keywordTimer = null;
+const debouncedKeyword = () => {
+  clearTimeout(keywordTimer);
+  keywordTimer = setTimeout(() => {
+    currentPage.value = 1;
+    loadData();
+  }, 300);
+};
 
 import { getDeviceTypeLabel, getDeviceTypeTag, getDeviceStatusLabel, getDeviceStatusTag } from '../../utils/mappings';
 import { Edit, Delete, MoreFilled } from '@element-plus/icons-vue';

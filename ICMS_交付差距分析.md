@@ -4,7 +4,7 @@
 
 ---
 
-## 一、已修复缺陷 (35 项)
+## 一、已修复缺陷 (36 项)
 
 ### 1.1 前端缺陷 (22/22)
 
@@ -50,6 +50,7 @@
 | 33 | 安全 | 验证码前端生成，后端不校验 | ✅ `CaptchaUtil` SVG + 服务端一次性校验 |
 | 34 | 安全 | 登录无频率限制，可暴力破解 | ✅ `LoginLimiter` 5/5/15 IP+账号限流 |
 | 35 | 性能 | 所有表格无分页，全量加载卡顿 | ✅ 8 Controller + API + 页面同步加 page/pageSize |
+| 36 | UX | 搜索无防抖，每次需手动点"查询" | ✅ 5 页面 keyword @input 300ms 防抖自动搜索 |
 
 ---
 
@@ -91,7 +92,7 @@
 
 ---
 
-## 三、高风险 — 数据量与性能 (5 项，1/5 已修复)
+## 三、高风险 — 数据量与性能 (5 项，2/5 已修复)
 
 > **定义**：数据量超过阈值时系统崩溃或不可用。
 
@@ -103,14 +104,13 @@
 | 原状 | ClassroomList / DeviceList / User / MyReservation / Approval / WorkOrderList / Notice / Log — 全部调用 `apiGetXxx()` 返回全量数据一次性渲染 |
 | 修复 | 8 个后端 Controller 加 `page`/`pageSize` 参数 + MyBatis-Plus `Page` 对象；前端 API 层 8 个 list 函数 `mockPaginate()` Mock 模式客户端切片；8 个 Vue 页面各加 `el-pagination` (10/20/50/100) + `total`/`currentPage`/`pageSize` 响应式状态
 
-### 3.2 搜索无防抖
+### 3.2 搜索无防抖 ✅ 已修复
 
 | 字段 | 值 |
 |------|-----|
-| 严重度 | 🟡 中 |
-| 现状 | ClassroomList / DeviceList / User 等页面的 `keyword` / `filters` 绑定了 `v-model`，未做 debounce |
-| 影响 | 每敲一个字符就重载全量数据，延迟高时体验极差 |
-| 修复方案 | 使用 `useDebounceFn` (VueUse) 或手写 debounce 封装 `loadData` |
+| 严重度 | 🟢 已修复 |
+| 原状 | ClassroomList / DeviceList / User / Approval / Log — 无 `@input` 事件，搜索必须手动点"查询"按钮 |
+| 修复 | 5 个页面的 keyword 输入框加 `@input="debouncedKeyword"` + `@clear="loadData"`；300ms 防抖自动搜索，输入时自动重置到第 1 页
 
 ### 3.3 ECharts CanvasRenderer 516KB
 
@@ -235,11 +235,10 @@
 
 ## 七、修复优先级建议
 
-### S1 — 上线前必须修（预计 1 天）
+### S1 — 上线前必须修（预计 0.5 天）
 
 ```
-1. 搜索防抖
-2. Dashboard 数据从后端取
+1. Dashboard 数据从后端取
 ```
 
 ### S2 — 首周迭代（预计 2-3 天）
@@ -280,7 +279,8 @@
 | 后端对接缺口 | 12 项 | ✅ Java 编译零错误 |
 | 安全加固 | 5 项 | ✅ SaToken + 双Token + 验证码 + 限流 + 分页 |
 | 基础架构 | 2 项 | ✅ Flyway 版本迁移 + 交付文档 |
+| 交互体验 | 2 项 | ✅ 键盘导航 + 搜索防抖 |
 
-> 致命缺陷 (4/4) 全部清零。生产环境安全性达标。S1 剩余「搜索防抖」「Dashboard 真实数据」。
+> 致命缺陷 (4/4) 全部清零。生产环境安全性达标。S1 仅剩「Dashboard 真实数据」。
 
 > 全系统 **0 编译/构建错误**。前端 `npm run dev` 演示。后端需要 MySQL 后 `mvnw.cmd spring-boot:run` 启动。Flyway 管理 DDL，SaToken 管理认证与鉴权 (`@SaCheckRole`)。

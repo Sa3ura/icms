@@ -41,6 +41,8 @@
             placeholder="搜索申请人姓名"
             clearable
             style="width: 180px"
+            @input="debouncedKeyword"
+            @clear="loadData"
           />
         </el-form-item>
         <el-form-item>
@@ -271,6 +273,15 @@ const form = ref({
 });
 
 const formRef = ref(null);
+
+let keywordTimer = null;
+const debouncedKeyword = () => {
+  clearTimeout(keywordTimer);
+  keywordTimer = setTimeout(() => {
+    currentPage.value = 1;
+    loadData();
+  }, 300);
+};
 
 import { getSectionTime, getReservationStatusLabel, getReservationStatusTag } from '../../utils/mappings';
 

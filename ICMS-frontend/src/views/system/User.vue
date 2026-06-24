@@ -45,6 +45,8 @@
             placeholder="搜索用户名/真实姓名"
             clearable
             style="width: 200px"
+            @input="debouncedKeyword"
+            @clear="loadData"
           />
         </el-form-item>
         <el-form-item>
@@ -392,6 +394,15 @@ const resetRules = {
 
 const formRef = ref(null);
 const resetFormRef = ref(null);
+
+let keywordTimer = null;
+const debouncedKeyword = () => {
+  clearTimeout(keywordTimer);
+  keywordTimer = setTimeout(() => {
+    currentPage.value = 1;
+    loadData();
+  }, 300);
+};
 
 const handlePageChange = (page) => {
   currentPage.value = page;

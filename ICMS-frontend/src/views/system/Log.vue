@@ -16,6 +16,8 @@
             placeholder="搜索用户名"
             clearable
             style="width: 180px"
+            @input="debouncedSearch"
+            @clear="loadData"
           />
         </el-form-item>
         <el-form-item label="操作名称">
@@ -24,6 +26,8 @@
             placeholder="如：用户登录"
             clearable
             style="width: 180px"
+            @input="debouncedSearch"
+            @clear="loadData"
           />
         </el-form-item>
         <el-form-item>
@@ -172,6 +176,15 @@ const filters = ref({
 });
 
 import { getMethodTag } from '../../utils/mappings';
+
+let searchTimer = null;
+const debouncedSearch = () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    currentPage.value = 1;
+    loadData();
+  }, 300);
+};
 
 const handlePageChange = (page) => {
   currentPage.value = page;

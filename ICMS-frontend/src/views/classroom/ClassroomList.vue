@@ -93,6 +93,8 @@
             placeholder="搜索教室名称/编号"
             clearable
             style="width: 180px"
+            @input="debouncedKeyword"
+            @clear="loadData"
           />
         </el-form-item>
         <el-form-item>
@@ -625,6 +627,15 @@ const handleSizeChange = (size) => {
 
 const handleCampusChange = () => {
   filters.value.building_id = '';
+};
+
+let keywordTimer = null;
+const debouncedKeyword = () => {
+  clearTimeout(keywordTimer);
+  keywordTimer = setTimeout(() => {
+    currentPage.value = 1;
+    loadData();
+  }, 300);
 };
 
 const handleFormCampusChange = (val) => {
