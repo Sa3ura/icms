@@ -48,3 +48,17 @@ icms:
     path: /api
     http-only: true
     same-site: Strict
+
+# Knife4j API 文档配置
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
