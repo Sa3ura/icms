@@ -60,8 +60,11 @@
             <AppenderRef ref="AppFile"/>
         </Logger>
 
-        <!-- SaToken -->
-        <Logger name="cn.dev33.satoken" level="WARN"/>
+        <!-- SaToken 认证 -->
+        <Logger name="cn.dev33.satoken" level="INFO" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="AppFile"/>
+        </Logger>
 
         <!-- ICMS 业务日志 -->
         <Logger name="com.icms" level="INFO" additivity="false">
