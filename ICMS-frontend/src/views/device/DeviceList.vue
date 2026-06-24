@@ -598,7 +598,7 @@ const debouncedKeyword = () => {
 };
 
 import { getDeviceTypeLabel, getDeviceTypeTag, getDeviceStatusLabel, getDeviceStatusTag } from '../../utils/mappings';
-import { Edit, Delete, MoreFilled } from '@element-plus/icons-vue';
+import { Warning, Edit, Delete, MoreFilled } from '@element-plus/icons-vue';
 import { useFilterSync } from '../../composables/useFilterSync';
 import { useExport } from '../../composables/useExport';
 
