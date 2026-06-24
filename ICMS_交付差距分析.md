@@ -1,12 +1,12 @@
 # ICMS 交付差距分析报告
 
-> 报告日期：2026-06-24 | 分析范围：ICMS 智慧教室管理系统全栈
+> 报告日期：2026-06-24 | 更新：2026-06-24 | 分析范围：ICMS 智慧教室管理系统全栈
 
 ---
 
-## 一、已修复缺陷 (22 项)
+## 一、已修复缺陷 (30 项)
 
-本报告仅列出**尚未修复**的差距。前期审查已修复的问题汇总如下，供参考验证：
+### 1.1 前端缺陷 (22/22)
 
 | # | 类别 | 问题 | 状态 |
 |---|------|------|------|
@@ -33,6 +33,19 @@
 | 21 | 功能 | 通知系统 `is_read` 全用户共享 / 无发送通知功能 | ✅ 已重构为 `read_by[]` 模式 + 通知管理页 |
 | 22 | 功能 | 通知列表无轮询 / 已读状态不持久化 | ✅ 已修复 |
 
+### 1.2 后端对接修复 (8/8)
+
+| # | 类别 | 问题 | 状态 |
+|---|------|------|------|
+| 23 | 缺口 | `GET /api/campuses`、`/api/buildings` 控制器不存在 | ✅ 新建 `CampusBuildingController` |
+| 24 | 缺口 | `POST /api/users/{id}/change-pwd` 端点缺失 | ✅ `UserController` 新增 |
+| 25 | 缺口 | `PUT /api/notices/{id}/read` + `/read-all` 端点缺失 | ✅ `NoticeController` 重构 |
+| 26 | 缺口 | `notice` 表无 `read_by` 字段 | ✅ 实体 + SQL Schema 新增 `read_by JSON` 列 |
+| 27 | 不兼容 | 后端返回 camelCase → 前端期望 snake_case | ✅ 新建 `BeanUtils.toMap()` + 7 个 Controller 统一蛇形输出 |
+| 28 | 安全 | `SysUser` 实体裸返含 `password` 字段 | ✅ `userToMap()` 去敏处理 |
+| 29 | 不兼容 | 工单/预约列表缺 JOIN 名称字段 | ✅ `WorkOrderController` / `ReservationController` 注入 `classroom_name` 等 |
+| 30 | 基础设施 | 手动 SQL 建表无版本控制 | ✅ Flyway 接管：`V1__init_schema.sql` + `flyway_schema_history` |
+
 ---
 
 ## 二、致命缺陷 — 生产不可用 (4 项)
@@ -54,7 +67,7 @@
 | 字段 | 值 |
 |------|-----|
 | 严重度 | 🔴 致命 |
-| 现状 | JWT token 存于 `localStorage.getItem('icms_token')`，axios 拦截器每次请求附加 `Bearer`头 |
+| 现状 | JWT token 存于 `localStorage.getItem('icms_token')`，axios 拦截器每次请求附加 `Bearer` 头 |
 | 攻击面 | XSS 脚本一行 `localStorage.getItem('icms_token')` 即可窃取所有会话 |
 | 修复方案 | 改为 httpOnly Cookie (BFF 模式) 或使用 Authorization Code + PKCE 流程 |
 
@@ -63,8 +76,8 @@
 | 字段 | 值 |
 |------|-----|
 | 严重度 | 🟠 高 |
-| 现状 | `Login.vue:152-158` `refreshCaptcha()` 生成随机字符，`loginRules.captcha` 前端比对 |
-| 攻击面 | 抓包后直接对 `/api/auth/login` 发送不存在验证码字段的请求（后端不校验）；脚本批量自动登 |
+| 现状 | `Login.vue` `refreshCaptcha()` 生成随机字符，前端本地比对 |
+| 攻击面 | 抓包后直接对 `/api/auth/login` 发送不存在验证码字段的请求（后端不校验）；脚本批量自动登录 |
 | 修复方案 | 验证码由后端生成（图片 / 滑块），登录接口校验 session 中的验证码值 |
 
 ### 2.4 登录无限试错（无频率限制）
@@ -114,18 +127,18 @@
 | 字段 | 值 |
 |------|-----|
 | 严重度 | 🟡 中 |
-| 现状 | `dashboard/index.vue:253-255` — `baseRates.map(v => v + Math.floor(Math.random() * 6))` |
+| 现状 | `dashboard/index.vue` — `baseRates.map(v => v + Math.floor(Math.random() * 6))` |
 | 影响 | 每次刷新显示的数据不同，无法作为管理决策依据 |
-| 修复方案 | 数据从后端 `/api/stats/dashboard` 取（已有 endpoint） |
+| 修复方案 | 数据从后端 `/api/stats/dashboard` 取（已有 endpoint，Mock 关闭后自动走真实数据） |
 
 ### 3.5 环境监测数据是 `Math.random()`
 
 | 字段 | 值 |
 |------|-----|
 | 严重度 | 🟡 中 |
-| 现状 | `api/index.js:546-557` `apiGetEnvironmentData` Mock 分支纯随机生成 |
+| 现状 | `api/index.js` `apiGetEnvironmentData` Mock 分支纯随机生成 |
 | 影响 | 无法区分真实传感器数据和模拟数据 |
-| 修复方案 | 对接后端 IoT 数据源（已有 `/api/environment/records` endpoint） |
+| 修复方案 | 对接后端 IoT 数据源（已有 `/api/environment/records` endpoint，Mock 关闭后自动走真实数据） |
 
 ---
 
@@ -181,7 +194,7 @@
 | 字段 | 值 |
 |------|-----|
 | 严重度 | 🟡 中 |
-| 现状 | ClassroomList/FreeClassroom 的课表弹窗只展示了排课记录二维网格，非真正周末视图课表 |
+| 现状 | ClassroomList/FreeClassroom 的课表弹窗只展示排课记录二维网格，非真正交互式课表 |
 | 修复方案 | 引入专用课表组件或增强 `timetableGrid` 交互（点击单元格建预约等） |
 
 ### 4.7 通知已读后历史不可查
@@ -226,7 +239,7 @@
 ### S1 — 上线前必须修（预计 3-5 天）
 
 ```
-1. 对接真实后端 + 服务端权限校验
+1. 服务端权限校验 (@PreAuthorize)
 2. 登录安全：验证码走后端 + 错误限流 + Token httpOnly
 3. 表格分页 + 搜索防抖
 4. Dashboard 数据从后端取
@@ -262,6 +275,12 @@
 
 ---
 
-## 八、已修复项 (22/22)
+## 八、已修复项汇总 (30/30)
 
-> 见第一章汇总表。当前前端审查发现的 22 项缺陷已全部修复，构建与 Lint 均通过。
+| 范围 | 已修复 | 状态 |
+|------|--------|------|
+| 前端缺陷 | 22 项 | ✅ 构建 + Lint 通过 |
+| 后端对接缺口 | 6 项 | ✅ Java 编译通过 |
+| 基础架构 | 2 项 | ✅ Flyway 版本迁移 + README |
+
+> 当前全系统 **0 编译/构建错误**，前端 Mock 模式可直接 `npm run dev` 演示，后端需 MySQL 后 `mvnw.cmd spring-boot:run` 启动。Flyway 接管 DDL 版本管理，DatabaseInitializer 负责 BCrypt 种子数据注入。
