@@ -17,7 +17,8 @@ Intelligent Classroom Management System — 基于 Vue 3 + Spring Boot 的全栈
 | **后端** | Spring Boot | 3.2.4 |
 | ORM | MyBatis-Plus | 3.5.5 |
 | 认证 | SaToken (JWT 无状态) | 1.38.0 |
-| 安全 | BCrypt + SVG 验证码 + IP 限流 | — |
+| 安全 | BCrypt + SVG 验证码 + IP 限流 + SaMode.OR | — |
+| 日志 | Log4j2 (彩色控制台 + SQL/App 分离滚动文件) | — |
 | 数据库 | MySQL + Flyway 版本迁移 | 8.x |
 | 构建 | Maven Wrapper | 3.9.6 |
 
@@ -158,7 +159,7 @@ npm run format     # ESLint 自动修复
 ## 特性
 
 - **双模式运行**：Mock 模式（纯前端 localStorage）与真实 API 模式一键切换
-- **安全认证**：SaToken JWT 无状态 + `@SaCheckRole` 注解鉴权 + 双 Token (Access 内存/Refresh httpOnly Cookie) 防 XSS 窃取
+- **安全认证**：SaToken JWT 无状态 + `@SaCheckRole(value = {...}, mode = SaMode.OR)` 注解鉴权 + 双 Token (Access 内存/Refresh httpOnly Cookie) 防 XSS 窃取
 - **登录安全**：后端 SVG 干扰验证码 + 同 IP 5次/5分钟失败封锁 15 分钟
 - **暗黑模式**：CSS 自定义属性 + 平滑主题过渡动画 (`theme-transitioning`)
 - **通知系统**：发布→推送→已读追踪（`read_by[]` 独立状态）+ 30s 自动轮询
@@ -170,5 +171,5 @@ npm run format     # ESLint 自动修复
 
 ## 交付状态
 
-已修复 **35 项**缺陷，致命安全漏洞 **4/4 全部清零**，编译/Lint 零错误。  
-可作为安全可靠的原型/Demo 演示。S1 级待修（分页 + 图表数据源）见 `ICMS_交付差距分析.md`。
+已修复 **40 项**缺陷，致命安全漏洞 **4/4 全部清零**，编译/Lint 零错误。  
+S1 仅剩 Dashboard 真实数据一项。可作为安全可靠的原型/Demo 演示。

@@ -4,9 +4,9 @@
 
 ---
 
-## 一、已修复缺陷 (36 项)
+## 一、已修复缺陷 (40 项)
 
-### 1.1 前端缺陷 (22/22)
+### 1.1 前端缺陷 (25/25)
 
 | # | 类别 | 问题 | 状态 |
 |---|------|------|------|
@@ -32,23 +32,29 @@
 | 20 | UX | 暗黑模式切换过渡缺失 | ✅ 已添加 `theme-transitioning` 优化过渡 |
 | 21 | 功能 | 通知系统 `is_read` 全用户共享 / 无发送通知功能 | ✅ 已重构为 `read_by[]` 模式 + 通知管理页 |
 | 22 | 功能 | 通知列表无轮询 / 已读状态不持久化 | ✅ 已修复 |
+| 23 | 兼容 | `el-link` underline boolean 已弃用 (Element Plus 3.0) | ✅ `:underline="false"` → `underline="never"` |
+| 24 | 兼容 | 退出登录闪"访客" + 页面状态残留 | ✅ page reload 清全局状态 |
+| 25 | 兼容 | 登录页刷新抛"刷新令牌不存在" | ✅ `to.path === '/login'` 跳过 tryRefresh |
 
-### 1.2 后端对接修复 (12/12)
+### 1.2 后端对接修复 (14/14)
 
 | # | 类别 | 问题 | 状态 |
 |---|------|------|------|
-| 23 | 缺口 | `GET /api/campuses`、`/api/buildings` 控制器不存在 | ✅ 新建 `CampusBuildingController` |
-| 24 | 缺口 | `POST /api/users/{id}/change-pwd` 端点缺失 | ✅ `UserController` 新增 |
-| 25 | 缺口 | `PUT /api/notices/{id}/read` + `/read-all` 端点缺失 | ✅ `NoticeController` 重构 |
-| 26 | 缺口 | `notice` 表无 `read_by` 字段 | ✅ 实体 + SQL Schema 新增 `read_by JSON` |
-| 27 | 不兼容 | 后端返回 camelCase → 前端期望 snake_case | ✅ `BeanUtils.toMap()` 统一蛇形输出 |
-| 28 | 安全 | `SysUser` 实体裸返含 `password` 字段 | ✅ `userToMap()` 去敏处理 |
-| 29 | 不兼容 | 工单/预约列表缺 JOIN 名称字段 | ✅ 注入 `classroom_name` 等 |
-| 30 | 基础设施 | 手动 SQL 建表无版本控制 | ✅ Flyway `V1__xxx.sql` + 迁移历史 |
-| 31 | 安全 | Spring Security 281 行样板，无角色注解 | ✅ SaToken `@SaCheckRole` 一行鉴权 |
-| 32 | 安全 | JWT 明文存 localStorage (XSS 窃取) | ✅ 双 Token: Access 内存 + Refresh httpOnly |
-| 33 | 安全 | 验证码前端生成，后端不校验 | ✅ `CaptchaUtil` SVG + 服务端一次性校验 |
-| 34 | 安全 | 登录无频率限制，可暴力破解 | ✅ `LoginLimiter` 5/5/15 IP+账号限流 |
+| 26 | 缺口 | `GET /api/campuses`、`/api/buildings` 控制器不存在 | ✅ 新建 `CampusBuildingController` |
+| 27 | 缺口 | `POST /api/users/{id}/change-pwd` 端点缺失 | ✅ `UserController` 新增 |
+| 28 | 缺口 | `PUT /api/notices/{id}/read` + `/read-all` 端点缺失 | ✅ `NoticeController` 重构 |
+| 29 | 缺口 | `notice` 表无 `read_by` 字段 | ✅ 实体 + SQL Schema 新增 `read_by JSON` |
+| 30 | 不兼容 | 后端返回 camelCase → 前端期望 snake_case | ✅ `BeanUtils.toMap()` 统一蛇形输出 |
+| 31 | 安全 | `SysUser` 实体裸返含 `password` 字段 | ✅ `userToMap()` 去敏处理 |
+| 32 | 不兼容 | 工单/预约列表缺 JOIN 名称字段 | ✅ 注入 `classroom_name` 等 |
+| 33 | 基础设施 | 手动 SQL 建表无版本控制 | ✅ Flyway `V1__xxx.sql` + 迁移历史 |
+| 34 | 安全 | Spring Security 281 行样板，无角色注解 | ✅ SaToken `@SaCheckRole` 一行鉴权 |
+| 35 | 安全 | JWT 明文存 localStorage (XSS 窃取) | ✅ 双 Token: Access 内存 + Refresh httpOnly |
+| 36 | 安全 | 验证码前端生成，后端不校验 | ✅ `CaptchaUtil` SVG + 服务端一次性校验 |
+| 37 | 安全 | 登录无频率限制，可暴力破解 | ✅ `LoginLimiter` 5/5/15 IP+账号限流 |
+| 38 | 安全 | `@SaCheckRole` 多角色默认 AND 逻辑导致拒绝 | ✅ 全部加 `mode = SaMode.OR` |
+| 39 | 质量 | Logback 控制台刷屏 + SQL 无分离 | ✅ Log4j2 迁移 + 彩色简洁 + SQL/App 分文件 |
+| 40 | 兼容 | 分页响应格式破坏 layout/dashboard/environment | ✅ `res.data` → `res.data.records` 修复 |
 | 35 | 性能 | 所有表格无分页，全量加载卡顿 | ✅ 8 Controller + API + 页面同步加 page/pageSize |
 | 36 | UX | 搜索无防抖，每次需手动点"查询" | ✅ 5 页面 keyword @input 300ms 防抖自动搜索 |
 
@@ -271,16 +277,18 @@
 
 ---
 
-## 八、已修复项汇总 (35/35)
+## 八、已修复项汇总 (40/40)
 
 | 范围 | 已修复 | 状态 |
 |------|--------|------|
 | 前端缺陷 | 22 项 | ✅ 构建 + Lint 零错误 |
-| 后端对接缺口 | 12 项 | ✅ Java 编译零错误 |
-| 安全加固 | 5 项 | ✅ SaToken + 双Token + 验证码 + 限流 + 分页 |
+| 后端对接缺口 | 14 项 | ✅ Java 编译零错误 |
+| 安全加固 | 5 项 | ✅ SaToken + 双Token + 验证码 + 限流 + OR 模式 |
 | 基础架构 | 2 项 | ✅ Flyway 版本迁移 + 交付文档 |
-| 交互体验 | 2 项 | ✅ 键盘导航 + 搜索防抖 |
+| 交互体验 | 2 项 | ✅ 搜索防抖 + 分页 |
+| 兼容修复 | 5 项 | ✅ logout / login refresh / el-link / pagination compat / router guard |
 
 > 致命缺陷 (4/4) 全部清零。生产环境安全性达标。S1 仅剩「Dashboard 真实数据」。
+> 新增 Log4j2 日志体系，SQL 单独文件，SaToken 可见，后台运行安静可控。
 
-> 全系统 **0 编译/构建错误**。前端 `npm run dev` 演示。后端需要 MySQL 后 `mvnw.cmd spring-boot:run` 启动。Flyway 管理 DDL，SaToken 管理认证与鉴权 (`@SaCheckRole`)。
+> 全系统 **0 编译/构建错误**。前端 `npm run dev` 演示。后端需要 MySQL 后 `mvnw.cmd spring-boot:run` 启动。Flyway 管理 DDL，SaToken 管理认证与鉴权 (`@SaCheckRole` + `SaMode.OR`)。
