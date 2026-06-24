@@ -113,6 +113,20 @@
               <div class="notice-panel">
                 <div class="notice-header">
                   <span class="notice-title-text">通知中心 ({{ unreadNoticesCount }})</span>
+                  <div class="notice-header-actions">
+                    <el-radio-group
+                      v-model="noticeFilter"
+                      size="small"
+                      @change="() => {}"
+                    >
+                      <el-radio-button value="all">
+                        全部
+                      </el-radio-button>
+                      <el-radio-button value="unread">
+                        未读
+                      </el-radio-button>
+                    </el-radio-group>
+                  </div>
                   <span
                     v-if="unreadNoticesCount > 0"
                     class="notice-clear"
@@ -125,7 +139,7 @@
                     class="notice-list"
                   >
                     <div
-                      v-for="item in notices"
+                      v-for="item in filteredNotices"
                       :key="item.id"
                       class="notice-item"
                       :class="{ 'is-read': item.is_read }"
@@ -169,6 +183,7 @@
                 <div
                   v-if="notices.length > 0"
                   class="notice-footer"
+                  @click="goToNotices"
                 >
                   查看全部通知
                 </div>
@@ -361,6 +376,7 @@ const noticeDialogVisible = ref(false);
 const currentNotice = ref(null);
 const pwdFormRef = ref(null);
 const notices = ref([]);
+const noticeFilter = ref('all');
 let pollTimer = null;
 
 const pwdForm = ref({
@@ -409,6 +425,13 @@ const menuActiveColor = computed(() => userStore.theme === 'dark' ? '#ffffff' : 
 
 const unreadNoticesCount = computed(() => notices.value.filter(n => !n.is_read).length);
 
+const filteredNotices = computed(() => {
+  if (noticeFilter.value === 'unread') {
+    return notices.value.filter(n => !n.is_read);
+  }
+  return notices.value;
+});
+
 const toggleTheme = () => {
   userStore.toggleTheme();
 };
@@ -422,6 +445,10 @@ const getRoleName = (role) => {
     repairer: 'Repairer'
   };
   return mapping[role] || 'Guest';
+};
+
+const goToNotices = () => {
+  router.push('/system/notices');
 };
 
 const handleCommand = async (command) => {
@@ -694,7 +721,13 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 8px;
   background-color: var(--bg-card);
+}
+.notice-header-actions {
+  flex: 1;
+  display: flex;
+  justify-content: center;
 }
 .notice-title-text {
   font-weight: 700;

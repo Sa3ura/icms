@@ -80,6 +80,12 @@
         >
           新增系统账号
         </el-button>
+        <el-button
+          icon="Download"
+          @click="exportToExcel(tableData, userExportCols, '系统用户')"
+        >
+          导出
+        </el-button>
       </div>
 
       <el-table
@@ -346,6 +352,18 @@ import { apiGetUsers, apiSaveUser, apiResetPassword } from '../../api';
 
 const userStore = useUserStore();
 
+const { exportToExcel } = useExport();
+
+const userExportCols = [
+  { prop: 'id', label: 'ID' },
+  { prop: 'username', label: '用户名' },
+  { prop: 'real_name', label: '真实姓名' },
+  { prop: 'user_type', label: '角色' },
+  { prop: 'phone', label: '手机号' },
+  { prop: 'email', label: '邮箱' },
+  { prop: 'created_at', label: '创建时间' }
+];
+
 const loading = ref(false);
 const submitLoading = ref(false);
 const dialogVisible = ref(false);
@@ -365,6 +383,8 @@ const filters = ref({
   keyword: ''
 });
 
+useFilterSync(filters);
+
 const form = ref({
   id: null,
   username: '',
@@ -378,7 +398,15 @@ const form = ref({
 const rules = {
   username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
   real_name: [{ required: true, message: '请输入真实姓名', trigger: 'blur' }],
-  user_type: [{ required: true, message: '请分配角色', trigger: 'change' }]
+  user_type: [{ required: true, message: '请分配角色', trigger: 'change' }],
+  phone: [
+    { required: true, message: '请输入手机号码', trigger: 'blur' },
+    { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号码', trigger: 'blur' }
+  ],
+  email: [
+    { required: true, message: '请输入邮箱地址', trigger: 'blur' },
+    { type: 'email', message: '请输入正确的邮箱格式', trigger: 'blur' }
+  ]
 };
 
 const resetForm = ref({
@@ -417,6 +445,8 @@ const handleSizeChange = (size) => {
 
 import { getRoleLabel, getRoleTag } from '../../utils/mappings';
 import { Key, Delete, MoreFilled } from '@element-plus/icons-vue';
+import { useFilterSync } from '../../composables/useFilterSync';
+import { useExport } from '../../composables/useExport';
 
 const resetFilters = () => {
   filters.value = { user_type: '', keyword: '' };

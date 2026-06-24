@@ -116,6 +116,12 @@
                     查看详情
                   </el-dropdown-item>
                   <el-dropdown-item
+                    command="readUsers"
+                    :icon="User"
+                  >
+                    已读明细
+                  </el-dropdown-item>
+                  <el-dropdown-item
                     command="delete"
                     :icon="Delete"
                     divided
@@ -273,6 +279,47 @@
         </div>
       </div>
     </el-dialog>
+
+    <!-- 已读用户明细弹窗 -->
+    <el-dialog
+      v-model="readUsersVisible"
+      title="已读用户明细"
+      width="420px"
+    >
+      <el-table
+        :data="readUsers"
+        style="width: 100%"
+      >
+        <el-table-column
+          prop="real_name"
+          label="用户姓名"
+          width="140"
+        />
+        <el-table-column
+          prop="user_type"
+          label="角色"
+          width="120"
+        >
+          <template #default="{ row }">
+            <el-tag
+              size="small"
+              type="info"
+            >
+              {{ getRoleLabel(row.user_type) }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column
+          prop="id"
+          label="ID"
+          width="80"
+        />
+      </el-table>
+      <el-empty
+        v-if="readUsers.length === 0"
+        description="暂无用户已读"
+      />
+    </el-dialog>
   </div>
 </template>
 
@@ -280,9 +327,9 @@
 import { ref, onMounted } from 'vue';
 import { useUserStore } from '../../store/user';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { apiGetNotices, apiSaveNotice, apiDeleteNotice } from '../../api';
+import { apiGetNotices, apiSaveNotice, apiDeleteNotice, request } from '../../api';
 import { getRoleLabel } from '../../utils/mappings';
-import { Edit, Delete, InfoFilled } from '@element-plus/icons-vue';
+import { Edit, Delete, InfoFilled, User } from '@element-plus/icons-vue';
 
 const userStore = useUserStore();
 
@@ -297,6 +344,9 @@ const total = ref(0);
 const currentPage = ref(1);
 const pageSize = ref(10);
 const formRef = ref(null);
+
+const readUsersVisible = ref(false);
+const readUsers = ref([]);
 
 const form = ref({
   id: null,
@@ -391,6 +441,13 @@ const handleDropdown = async (command, row) => {
   } else if (command === 'detail') {
     currentNotice.value = { ...row, read_count: Array.isArray(row.read_by) ? row.read_by.length : 0 };
     detailVisible.value = true;
+  } else if (command === 'readUsers') {
+    readUsers.value = [];
+    readUsersVisible.value = true;
+    try {
+      const res = await request.get(`/api/notices/${row.id}/read-users`);
+      if (res.code === 200) readUsers.value = res.data;
+    } catch { /* ignore */ }
   } else if (command === 'delete') {
     try {
       await ElMessageBox.confirm('确定删除此通知吗？所有用户将无法再看到该通知。', '删除确认', {

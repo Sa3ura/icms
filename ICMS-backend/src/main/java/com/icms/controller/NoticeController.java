@@ -11,7 +11,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.icms.common.Result;
 import com.icms.common.BeanUtils;
 import com.icms.entity.Notice;
+import com.icms.entity.SysUser;
 import com.icms.service.NoticeService;
+import com.icms.service.SysUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,6 +28,9 @@ public class NoticeController {
 
     @Autowired
     private NoticeService noticeService;
+
+    @Autowired
+    private SysUserService sysUserService;
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -127,5 +132,30 @@ public class NoticeController {
         Map<String, Object> result = new HashMap<>();
         result.put("marked", marked);
         return Result.success(result);
+    }
+
+    @GetMapping("/{id}/read-users")
+    public Result<List<Map<String, Object>>> getReadUsers(@PathVariable Long id) {
+        Notice notice = noticeService.getById(id);
+        if (notice == null) return Result.error("通知不存在");
+        try {
+            List<Long> readBy = objectMapper.readValue(
+                    notice.getReadBy() != null ? notice.getReadBy() : "[]",
+                    new TypeReference<List<Long>>() {});
+            List<Map<String, Object>> users = new ArrayList<>();
+            for (Long uid : readBy) {
+                SysUser u = sysUserService.getById(uid);
+                if (u != null) {
+                    Map<String, Object> mu = new HashMap<>();
+                    mu.put("id", u.getId());
+                    mu.put("real_name", u.getRealName());
+                    mu.put("user_type", u.getUserType());
+                    users.add(mu);
+                }
+            }
+            return Result.success(users);
+        } catch (Exception e) {
+            return Result.error("读取已读用户失败");
+        }
     }
 }

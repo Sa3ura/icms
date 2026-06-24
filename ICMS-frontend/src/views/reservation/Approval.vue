@@ -68,6 +68,15 @@
       shadow="never"
       class="table-card"
     >
+      <div class="table-actions">
+        <el-button
+          icon="Download"
+          @click="exportToExcel(tableData, apprExportCols, '预约审批')"
+        >
+          导出
+        </el-button>
+      </div>
+
       <el-table
         v-loading="loading"
         :data="tableData"
@@ -252,6 +261,21 @@ import { apiGetReservations, apiApproveReservation } from '../../api';
 
 const userStore = useUserStore();
 
+const { exportToExcel } = useExport();
+
+const apprExportCols = [
+  { prop: 'id', label: '单号' },
+  { prop: 'applicant_name', label: '申请人' },
+  { prop: 'classroom_name', label: '教室' },
+  { prop: 'reservation_date', label: '日期' },
+  { prop: 'start_section', label: '开始节' },
+  { prop: 'end_section', label: '结束节' },
+  { prop: 'purpose', label: '用途' },
+  { prop: 'attendee_count', label: '人数' },
+  { prop: 'status', label: '状态' },
+  { prop: 'created_at', label: '提交时间' }
+];
+
 const loading = ref(false);
 const submitLoading = ref(false);
 const dialogVisible = ref(false);
@@ -267,6 +291,8 @@ const filters = ref({
   status: 'pending', // 默认筛选待审批
   keyword: ''
 });
+
+useFilterSync(filters);
 
 const form = ref({
   remark: ''
@@ -284,6 +310,8 @@ const debouncedKeyword = () => {
 };
 
 import { getSectionTime, getReservationStatusLabel, getReservationStatusTag } from '../../utils/mappings';
+import { useFilterSync } from '../../composables/useFilterSync';
+import { useExport } from '../../composables/useExport';
 
 const resetFilters = () => {
   filters.value = { status: 'pending', keyword: '' };

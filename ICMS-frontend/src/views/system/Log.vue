@@ -53,6 +53,15 @@
       shadow="never"
       class="table-card"
     >
+      <div class="table-actions">
+        <el-button
+          icon="Download"
+          @click="exportToExcel(tableData, logExportCols, '操作日志')"
+        >
+          导出
+        </el-button>
+      </div>
+
       <el-table
         v-loading="loading"
         :data="tableData"
@@ -170,12 +179,29 @@ const total = ref(0);
 const currentPage = ref(1);
 const pageSize = ref(10);
 
+const { exportToExcel } = useExport();
+
+const logExportCols = [
+  { prop: 'id', label: 'ID' },
+  { prop: 'username', label: '操作用户' },
+  { prop: 'operation', label: '操作内容' },
+  { prop: 'request_method', label: '请求方式' },
+  { prop: 'request_url', label: '请求路径' },
+  { prop: 'request_ip', label: '操作IP' },
+  { prop: 'result_status', label: '结果状态' },
+  { prop: 'created_at', label: '操作时间' }
+];
+
 const filters = ref({
   username: '',
   operation: ''
 });
 
+useFilterSync(filters);
+
 import { getMethodTag } from '../../utils/mappings';
+import { useFilterSync } from '../../composables/useFilterSync';
+import { useExport } from '../../composables/useExport';
 
 let searchTimer = null;
 const debouncedSearch = () => {

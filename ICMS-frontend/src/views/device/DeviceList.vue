@@ -127,6 +127,12 @@
         >
           新增设备档案
         </el-button>
+        <el-button
+          icon="Download"
+          @click="exportToExcel(tableData, deviceExportCols, '设备资产')"
+        >
+          导出
+        </el-button>
       </div>
 
       <el-table
@@ -502,6 +508,19 @@ import {
 const userStore = useUserStore();
 const router = useRouter();
 
+const { exportToExcel } = useExport();
+
+const deviceExportCols = [
+  { prop: 'device_code', label: '设备编码' },
+  { prop: 'device_name', label: '设备名称' },
+  { prop: 'device_type', label: '类型' },
+  { prop: 'brand', label: '品牌' },
+  { prop: 'model', label: '型号' },
+  { prop: 'classroom_name', label: '所属教室' },
+  { prop: 'status', label: '状态' },
+  { prop: 'purchase_date', label: '采购日期' }
+];
+
 const loading = ref(false);
 const submitLoading = ref(false);
 const dialogVisible = ref(false);
@@ -524,6 +543,8 @@ const filters = ref({
   status: '',
   keyword: ''
 });
+
+useFilterSync(filters);
 
 const form = ref({
   id: null,
@@ -571,6 +592,8 @@ const debouncedKeyword = () => {
 
 import { getDeviceTypeLabel, getDeviceTypeTag, getDeviceStatusLabel, getDeviceStatusTag } from '../../utils/mappings';
 import { Edit, Delete, MoreFilled } from '@element-plus/icons-vue';
+import { useFilterSync } from '../../composables/useFilterSync';
+import { useExport } from '../../composables/useExport';
 
 const resetFilters = () => {
   filters.value = { classroom_id: '', device_type: '', status: '', keyword: '' };

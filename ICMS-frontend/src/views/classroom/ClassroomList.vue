@@ -131,13 +131,33 @@
         >
           新增教室
         </el-button>
+        <el-button
+          icon="Download"
+          @click="exportToExcel(tableData, classroomExportCols, '教室资源')"
+        >
+          导出
+        </el-button>
+        <el-button
+          v-if="selectedRows.length > 0"
+          type="danger"
+          plain
+          icon="Delete"
+          @click="batchDelete"
+        >
+          批量删除 ({{ selectedRows.length }})
+        </el-button>
       </div>
 
       <el-table
         v-loading="loading"
         :data="tableData"
         style="width: 100%"
+        @selection-change="(rows) => selectedRows = rows"
       >
+        <el-table-column
+          type="selection"
+          width="50"
+        />
         <el-table-column
           prop="room_no"
           label="教室编号"
@@ -509,6 +529,7 @@
               <div
                 v-if="row[day]"
                 :class="['schedule-block', row[day].type]"
+                @click="handleTimetableClick(row, day)"
               >
                 <div class="block-title">
                   {{ row[day].name }}
@@ -550,11 +571,23 @@ import {
 const userStore = useUserStore();
 const router = useRouter();
 
+const { exportToExcel } = useExport();
+
+const classroomExportCols = [
+  { prop: 'room_no', label: '教室编号' },
+  { prop: 'name', label: '教室名称' },
+  { prop: 'capacity', label: '容纳人数' },
+  { prop: 'room_type', label: '类型' },
+  { prop: 'status', label: '状态' },
+  { prop: 'floor_no', label: '楼层' }
+];
+
 const loading = ref(false);
 const submitLoading = ref(false);
 const dialogVisible = ref(false);
 const dialogType = ref('create'); // create / edit
 const tableData = ref([]);
+const selectedRows = ref([]);
 const total = ref(0);
 const currentPage = ref(1);
 const pageSize = ref(10);
@@ -579,6 +612,8 @@ const filters = ref({
   status: '',
   keyword: ''
 });
+
+useFilterSync(filters);
 
 // 根据当前登录角色判断是否有编辑权限
 const canEdit = computed(() => ['admin', 'jw'].includes(userStore.role));
@@ -625,6 +660,20 @@ const handleSizeChange = (size) => {
   loadData();
 };
 
+const batchDelete = async () => {
+  try {
+    await ElMessageBox.confirm(`确定删除选中的 ${selectedRows.value.length} 个教室吗？`, '批量删除', {
+      type: 'warning'
+    });
+    for (const row of selectedRows.value) {
+      await apiDeleteClassroom(row.id, userStore.userInfo.username);
+    }
+    ElMessage.success('批量删除完成');
+    selectedRows.value = [];
+    loadData();
+  } catch { /* cancelled */ }
+};
+
 const handleCampusChange = () => {
   filters.value.building_id = '';
 };
@@ -656,6 +705,8 @@ import {
 } from '../../utils/mappings';
 import { useTimetable } from '../../composables/useTimetable';
 import { Cpu, Edit, Delete, MoreFilled } from '@element-plus/icons-vue';
+import { useFilterSync } from '../../composables/useFilterSync';
+import { useExport } from '../../composables/useExport';
 
 // 重置查询条件
 const resetFilters = () => {
@@ -802,6 +853,13 @@ const viewTimetable = async (row) => {
 
 // 将课表数据构造成节次为行，星期为列的网络格
 const { timetableGrid } = useTimetable(activeRoomSchedules, activeRoomReservations);
+
+const handleTimetableClick = (row, day) => {
+  const cell = row[day];
+  if (!cell) return;
+  router.push('/reservation/my');
+  ElMessage.info(`${cell.type === 'course' ? '课程' : '预约'}: ${cell.name}`);
+};
 
 onMounted(() => {
   loadData();

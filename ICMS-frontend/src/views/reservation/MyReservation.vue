@@ -77,6 +77,12 @@
         >
           发起预约申请
         </el-button>
+        <el-button
+          icon="Download"
+          @click="exportToExcel(tableData, resExportCols, '我的预约')"
+        >
+          导出
+        </el-button>
       </div>
 
       <el-table
@@ -353,6 +359,19 @@ import {
 
 const userStore = useUserStore();
 
+const { exportToExcel } = useExport();
+
+const resExportCols = [
+  { prop: 'id', label: '预约单号' },
+  { prop: 'classroom_name', label: '教室' },
+  { prop: 'reservation_date', label: '日期' },
+  { prop: 'start_section', label: '开始节' },
+  { prop: 'end_section', label: '结束节' },
+  { prop: 'purpose', label: '用途' },
+  { prop: 'attendee_count', label: '人数' },
+  { prop: 'status', label: '状态' }
+];
+
 const loading = ref(false);
 const submitLoading = ref(false);
 const dialogVisible = ref(false);
@@ -435,6 +454,7 @@ const handleSizeChange = (size) => {
 
 // 节次时间显示
 import { getSectionTime, getReservationStatusLabel, getReservationStatusTag } from '../../utils/mappings';
+import { useExport } from '../../composables/useExport';
 
 const resetFilters = () => {
   filters.value = { status: '', date_range: [] };

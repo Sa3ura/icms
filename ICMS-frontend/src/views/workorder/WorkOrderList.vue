@@ -109,6 +109,12 @@
         >
           提交故障报修
         </el-button>
+        <el-button
+          icon="Download"
+          @click="exportToExcel(tableData, woExportCols, '报修工单')"
+        >
+          导出
+        </el-button>
       </div>
 
       <el-table
@@ -574,6 +580,20 @@ import {
 
 const userStore = useUserStore();
 
+const { exportToExcel } = useExport();
+
+const woExportCols = [
+  { prop: 'order_no', label: '工单编号' },
+  { prop: 'classroom_name', label: '报修教室' },
+  { prop: 'device_name', label: '故障设备' },
+  { prop: 'fault_title', label: '故障标题' },
+  { prop: 'fault_level', label: '故障等级' },
+  { prop: 'status', label: '工单状态' },
+  { prop: 'reporter_name', label: '报修人' },
+  { prop: 'handler_name', label: '维修工' },
+  { prop: 'created_at', label: '报修时间' }
+];
+
 const loading = ref(false);
 const submitLoading = ref(false);
 const activeRow = ref(null);
@@ -597,6 +617,8 @@ const filters = ref({
   fault_level: '',
   classroom_id: ''
 });
+
+useFilterSync(filters);
 
 // 新增工单
 const createForm = ref({
@@ -644,6 +666,8 @@ const canClose = (row) => ['admin', 'jw'].includes(userStore.role) || Number(row
 
 import { getFaultLevelLabel, getFaultLevelTag, getWorkOrderStatusLabel, getWorkOrderStatusTag } from '../../utils/mappings';
 import { UserFilled, Tools, CircleCloseFilled, MoreFilled } from '@element-plus/icons-vue';
+import { useFilterSync } from '../../composables/useFilterSync';
+import { useExport } from '../../composables/useExport';
 
 const resetFilters = () => {
   filters.value = { status: '', fault_level: '', classroom_id: '' };
