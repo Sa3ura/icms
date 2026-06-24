@@ -40,15 +40,14 @@ userStore.initTheme();
 
 let refreshAttempted = false;
 
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to, _from) => {
   const userStore = useUserStore();
 
   if (!refreshAttempted && !userStore.isLoggedIn) {
     refreshAttempted = true;
     const success = await userStore.tryRefresh();
     if (success && to.path === '/login') {
-      next('/');
-      return;
+      return '/';
     }
   }
 
@@ -56,14 +55,15 @@ router.beforeEach(async (to, from, next) => {
   const userRole = userStore.role;
 
   if (to.matched.some(record => record.meta.requiresAuth !== false) && !isLoggedIn) {
-    next('/login');
-  } else if (to.path === '/login' && isLoggedIn) {
-    next('/');
-  } else if (to.meta.roles && !to.meta.roles.includes(userRole)) {
-    next('/dashboard');
-  } else {
-    next();
+    return '/login';
   }
+  if (to.path === '/login' && isLoggedIn) {
+    return '/';
+  }
+  if (to.meta.roles && !to.meta.roles.includes(userRole)) {
+    return '/dashboard';
+  }
+  return true;
 });
 
 app.mount('#app');
