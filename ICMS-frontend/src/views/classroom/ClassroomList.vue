@@ -710,7 +710,7 @@ import {
   getWeekdayLabel 
 } from '../../utils/mappings';
 import { useTimetable } from '../../composables/useTimetable';
-import { Cpu, Edit, Delete, MoreFilled } from '@element-plus/icons-vue';
+import { Calendar, Cpu, Edit, Delete, ArrowDown, MoreFilled } from '@element-plus/icons-vue';
 import { useFilterSync } from '../../composables/useFilterSync';
 import { useExport } from '../../composables/useExport';
 
