@@ -33,7 +33,7 @@
 | 21 | 功能 | 通知系统 `is_read` 全用户共享 / 无发送通知功能 | ✅ 已重构为 `read_by[]` 模式 + 通知管理页 |
 | 22 | 功能 | 通知列表无轮询 / 已读状态不持久化 | ✅ 已修复 |
 
-### 1.2 后端对接修复 (8/8)
+### 1.2 后端对接修复 (9/9)
 
 | # | 类别 | 问题 | 状态 |
 |---|------|------|------|
@@ -43,8 +43,9 @@
 | 26 | 缺口 | `notice` 表无 `read_by` 字段 | ✅ 实体 + SQL Schema 新增 `read_by JSON` 列 |
 | 27 | 不兼容 | 后端返回 camelCase → 前端期望 snake_case | ✅ 新建 `BeanUtils.toMap()` + 7 个 Controller 统一蛇形输出 |
 | 28 | 安全 | `SysUser` 实体裸返含 `password` 字段 | ✅ `userToMap()` 去敏处理 |
-| 29 | 不兼容 | 工单/预约列表缺 JOIN 名称字段 | ✅ `WorkOrderController` / `ReservationController` 注入 `classroom_name` 等 |
+| 29 | 不兼容 | 工单/预约列表缺 JOIN 名称字段 | ✅ `WorkOrderController` / `ReservationController` 注入名称 |
 | 30 | 基础设施 | 手动 SQL 建表无版本控制 | ✅ Flyway 接管：`V1__init_schema.sql` + `flyway_schema_history` |
+| 31 | 安全 | Spring Security 样板代码 281 行，无角色注解 | ✅ SaToken 重构：4 文件删除→2 文件新增，10 个 Controller 一行注解鉴权 |
 
 ---
 
@@ -52,15 +53,13 @@
 
 > **定义**：不修复则无法安全部署到公网环境。
 
-### 2.1 权限纯前端校验
+### 2.1 权限纯前端校验 ✅ 已修复 (SaToken)
 
 | 字段 | 值 |
 |------|-----|
-| 严重度 | 🔴 致命 |
-| 现状 | 所有 `canEdit` / `canAssign` / `canClose` 逻辑仅通过 `userStore.role` 判断；路由守卫仅检查 `meta.roles`，无服务端二次校验 |
-| 攻击面 | 修改 `localStorage.icms_user_info` → `user_type: "admin"` → 刷新页面即提权 |
-| 涉及文件 | `router/index.js`、 所有 View 文件的权限 computed |
-| 修复方案 | 每项写操作需后端做 `@PreAuthorize` 鉴权，前端 `canEdit` 仅用于 UI 显隐而非安全边界 |
+| 严重度 | 🟢 已修复 |
+| 原状 | 所有 `canEdit` / `canAssign` 仅通过 `userStore.role` 判断；修改 localStorage 即可提权 |
+| 修复 | 10 个 Controller 已加 `@SaCheckRole({"admin", "jw"})` / `@SaCheckLogin` 后端硬校验；前端 computed 仅用于 UI 显隐 |
 
 ### 2.2 Token 明文存 localStorage
 
@@ -236,13 +235,12 @@
 
 ## 七、修复优先级建议
 
-### S1 — 上线前必须修（预计 3-5 天）
+### S1 — 上线前必须修（预计 2-3 天）
 
 ```
-1. 服务端权限校验 (@PreAuthorize)
-2. 登录安全：验证码走后端 + 错误限流 + Token httpOnly
-3. 表格分页 + 搜索防抖
-4. Dashboard 数据从后端取
+1. 登录安全：验证码走后端 + 错误限流 + Token httpOnly
+2. 表格分页 + 搜索防抖
+3. Dashboard 数据从后端取
 ```
 
 ### S2 — 首周迭代（预计 2-3 天）
@@ -275,12 +273,13 @@
 
 ---
 
-## 八、已修复项汇总 (30/30)
+## 八、已修复项汇总 (31/31)
 
 | 范围 | 已修复 | 状态 |
 |------|--------|------|
 | 前端缺陷 | 22 项 | ✅ 构建 + Lint 通过 |
-| 后端对接缺口 | 6 项 | ✅ Java 编译通过 |
-| 基础架构 | 2 项 | ✅ Flyway 版本迁移 + README |
+| 后端对接缺口 | 9 项 | ✅ Java 编译通过 |
+| 基础架构 | 2 项 | ✅ Flyway + SaToken |
+| Spring Security 替换 | 281 行样板代码 → 2 文件 64 行 | ✅ SaToken JWT 无状态模式 |
 
-> 当前全系统 **0 编译/构建错误**，前端 Mock 模式可直接 `npm run dev` 演示，后端需 MySQL 后 `mvnw.cmd spring-boot:run` 启动。Flyway 接管 DDL 版本管理，DatabaseInitializer 负责 BCrypt 种子数据注入。
+> 全系统 **0 编译/构建错误**。前端 `npm run dev` 演示。后端需要 MySQL 后 `mvnw.cmd spring-boot:run` 启动。Flyway 管理 DDL，SaToken 管理认证与鉴权 (`@SaCheckRole`)。
