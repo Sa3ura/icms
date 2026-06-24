@@ -86,7 +86,7 @@
                 保持登录
               </el-checkbox>
               <el-link
-                :underline="false"
+                underline="never"
                 class="forgot-link"
                 @click="forgotPassword"
               >
