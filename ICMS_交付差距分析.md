@@ -4,7 +4,7 @@
 
 ---
 
-## 一、已修复缺陷 (30 项)
+## 一、已修复缺陷 (35 项)
 
 ### 1.1 前端缺陷 (22/22)
 
@@ -49,6 +49,7 @@
 | 32 | 安全 | JWT 明文存 localStorage (XSS 窃取) | ✅ 双 Token: Access 内存 + Refresh httpOnly |
 | 33 | 安全 | 验证码前端生成，后端不校验 | ✅ `CaptchaUtil` SVG + 服务端一次性校验 |
 | 34 | 安全 | 登录无频率限制，可暴力破解 | ✅ `LoginLimiter` 5/5/15 IP+账号限流 |
+| 35 | 性能 | 所有表格无分页，全量加载卡顿 | ✅ 8 Controller + API + 页面同步加 page/pageSize |
 
 ---
 
@@ -90,18 +91,17 @@
 
 ---
 
-## 三、高风险 — 数据量与性能 (5 项)
+## 三、高风险 — 数据量与性能 (5 项，1/5 已修复)
 
 > **定义**：数据量超过阈值时系统崩溃或不可用。
 
-### 3.1 所有表格无分页
+### 3.1 所有表格无分页 ✅ 已修复
 
 | 字段 | 值 |
 |------|-----|
-| 严重度 | 🟠 高 |
-| 现状 | ClassroomList / DeviceList / User / MyReservation / Approval / WorkOrderList — 全部调用 `apiGetXxx()` 返回全量数据，`v-loading` 一次性渲染 |
-| 影响 | 超过 100 条时首屏加载 >3s；超过 500 条 `el-table` DOM 过重导致明显卡顿 |
-| 修复方案 | 引入 Element Plus `el-pagination`，后端 API 支持 `?page=1&size=20`；Mock 模式下前端模拟分页 |
+| 严重度 | 🟢 已修复 |
+| 原状 | ClassroomList / DeviceList / User / MyReservation / Approval / WorkOrderList / Notice / Log — 全部调用 `apiGetXxx()` 返回全量数据一次性渲染 |
+| 修复 | 8 个后端 Controller 加 `page`/`pageSize` 参数 + MyBatis-Plus `Page` 对象；前端 API 层 8 个 list 函数 `mockPaginate()` Mock 模式客户端切片；8 个 Vue 页面各加 `el-pagination` (10/20/50/100) + `total`/`currentPage`/`pageSize` 响应式状态
 
 ### 3.2 搜索无防抖
 
@@ -235,10 +235,10 @@
 
 ## 七、修复优先级建议
 
-### S1 — 上线前必须修（预计 1-2 天）
+### S1 — 上线前必须修（预计 1 天）
 
 ```
-1. 表格分页 + 搜索防抖
+1. 搜索防抖
 2. Dashboard 数据从后端取
 ```
 
@@ -278,9 +278,9 @@
 |------|--------|------|
 | 前端缺陷 | 22 项 | ✅ 构建 + Lint 零错误 |
 | 后端对接缺口 | 12 项 | ✅ Java 编译零错误 |
-| 安全加固 | 4 项 | ✅ SaToken + 双Token + 验证码 + 限流 |
+| 安全加固 | 5 项 | ✅ SaToken + 双Token + 验证码 + 限流 + 分页 |
 | 基础架构 | 2 项 | ✅ Flyway 版本迁移 + 交付文档 |
 
-> 致命缺陷 (4/4) 全部清零。生产环境安全性达标。后续待办为功能增强（分页、导出、测试等）。
+> 致命缺陷 (4/4) 全部清零。生产环境安全性达标。S1 剩余「搜索防抖」「Dashboard 真实数据」。
 
 > 全系统 **0 编译/构建错误**。前端 `npm run dev` 演示。后端需要 MySQL 后 `mvnw.cmd spring-boot:run` 启动。Flyway 管理 DDL，SaToken 管理认证与鉴权 (`@SaCheckRole`)。
