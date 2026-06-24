@@ -601,6 +601,7 @@ import { getDeviceTypeLabel, getDeviceTypeTag, getDeviceStatusLabel, getDeviceSt
 import { Warning, Edit, Delete, MoreFilled } from '@element-plus/icons-vue';
 import { useFilterSync } from '../../composables/useFilterSync';
 import { useExport } from '../../composables/useExport';
+import { useHmrData } from '../../composables/useHmrData';
 
 const resetFilters = () => {
   filters.value = { classroom_id: '', device_type: '', status: '', keyword: '' };
@@ -621,6 +622,8 @@ const loadData = async () => {
     loading.value = false;
   }
 };
+
+useHmrData(loadData);
 
 const handlePageChange = (page) => {
   currentPage.value = page;

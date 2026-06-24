@@ -454,6 +454,7 @@ import { getRoleLabel, getRoleTag } from '../../utils/mappings';
 import { Key, Delete, MoreFilled } from '@element-plus/icons-vue';
 import { useFilterSync } from '../../composables/useFilterSync';
 import { useExport } from '../../composables/useExport';
+import { useHmrData } from '../../composables/useHmrData';
 
 const resetFilters = () => {
   filters.value = { user_type: '', keyword: '' };

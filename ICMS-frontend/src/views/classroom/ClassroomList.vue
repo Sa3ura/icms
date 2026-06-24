@@ -714,6 +714,7 @@ import { useTimetable } from '../../composables/useTimetable';
 import { Calendar, Cpu, Edit, Delete, ArrowDown, MoreFilled } from '@element-plus/icons-vue';
 import { useFilterSync } from '../../composables/useFilterSync';
 import { useExport } from '../../composables/useExport';
+import { useHmrData } from '../../composables/useHmrData';
 
 // 重置查询条件
 const resetFilters = () => {
@@ -744,6 +745,8 @@ const loadData = async () => {
     loading.value = false;
   }
 };
+
+useHmrData(loadData);
 
 const handleCreate = () => {
   form.value = {
