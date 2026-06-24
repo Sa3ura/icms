@@ -445,10 +445,10 @@ watch(() => userStore.theme, () => {
 });
 
 onMounted(async () => {
-  const roomRes = await apiGetClassrooms();
-  if (roomRes.code === 200 && roomRes.data.length > 0) {
-    classrooms.value = roomRes.data;
-    selectedClassroomId.value = roomRes.data[0].id;
+  const roomRes = await apiGetClassrooms({ pageSize: 10000 });
+  if (roomRes.code === 200 && roomRes.data.records.length > 0) {
+    classrooms.value = roomRes.data.records;
+    selectedClassroomId.value = roomRes.data.records[0].id;
     await loadEnvData();
   }
   window.addEventListener('resize', handleResize);

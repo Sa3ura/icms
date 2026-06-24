@@ -284,13 +284,14 @@ const loadTodayTable = async () => {
     const todayStr = today.toISOString().slice(0, 10);
     const dayOfWeek = today.getDay() || 7;
 
-    const schedRes = await apiGetSchedules({ weekday: dayOfWeek });
-    const resRes = await apiGetReservations({ date_range: [todayStr, todayStr], status: 'approved' });
-    const classrooms = (await apiGetClassrooms()).data;
+    const schedRes = await apiGetSchedules({ pageSize: 10000, weekday: dayOfWeek });
+    const resRes = await apiGetReservations({ pageSize: 10000, date_range: [todayStr, todayStr], status: 'approved' });
+    const classroomsRes = await apiGetClassrooms({ pageSize: 10000 });
+    const classrooms = classroomsRes.code === 200 ? classroomsRes.data.records : [];
 
     const list = [];
     if (schedRes.code === 200) {
-      schedRes.data.forEach(s => {
+      schedRes.data.records.forEach(s => {
         const room = classrooms.find(c => c.id === s.classroom_id);
         list.push({
           id: 'course_' + s.id,
@@ -305,7 +306,7 @@ const loadTodayTable = async () => {
     }
 
     if (resRes.code === 200) {
-      resRes.data.forEach(r => {
+      resRes.data.records.forEach(r => {
         list.push({
           id: 'res_' + r.id,
           classroom_name: r.classroom_name,
@@ -389,10 +390,10 @@ const updateCharts = async () => {
   if (pieChartRef.value) {
     if (!pieChart) pieChart = echarts.init(pieChartRef.value);
 
-    const devRes = await apiGetDevices();
+    const devRes = await apiGetDevices({ pageSize: 10000 });
     let normal = 0, fault = 0, repairing = 0, scrapped = 0;
     if (devRes.code === 200) {
-      devRes.data.forEach(d => {
+      devRes.data.records.forEach(d => {
         if (d.status === 'normal') normal++;
         else if (d.status === 'fault') fault++;
         else if (d.status === 'repairing') repairing++;

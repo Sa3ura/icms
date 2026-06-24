@@ -458,9 +458,9 @@ const submitPasswordChange = () => {
 const loadNotices = async () => {
   try {
     const userId = userStore.userInfo?.id;
-    const res = await apiGetNotices(userId);
+    const res = await apiGetNotices({ userId, pageSize: 10000 });
     if (res.code === 200) {
-      notices.value = res.data
+      notices.value = res.data.records
         .filter(notice => !notice.target_role || notice.target_role === userStore.role)
         .sort((a, b) => (a.is_read === b.is_read ? 0 : a.is_read ? 1 : -1));
     }
