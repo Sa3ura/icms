@@ -10,6 +10,7 @@ import com.icms.service.SysUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import com.icms.common.BeanUtils;
+import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
