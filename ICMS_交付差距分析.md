@@ -98,7 +98,7 @@
 
 ---
 
-## 三、高风险 — 数据量与性能 (5 项，3/5 已修复)
+## 三、高风险 — 数据量与性能 (5 项，4/5 已修复)
 
 > **定义**：数据量超过阈值时系统崩溃或不可用。
 
@@ -126,14 +126,13 @@
 | 原状 | `echarts/renderers` CanvasRenderer 516KB，dashboard 和 environment 首屏加载 |
 | 修复 | `CanvasRenderer` → `SVGRenderer`（~80KB），图表简单不需 Canvas 性能 |
 
-### 3.4 Dashboard 图表是随机假数据
+### 3.4 Dashboard 图表是随机假数据 ✅ 已修复
 
 | 字段 | 值 |
 |------|-----|
-| 严重度 | 🟡 中 |
-| 现状 | `dashboard/index.vue` — `baseRates.map(v => v + Math.floor(Math.random() * 6))` |
-| 影响 | 每次刷新显示的数据不同，无法作为管理决策依据 |
-| 修复方案 | 数据从后端 `/api/stats/dashboard` 取（已有 endpoint，Mock 关闭后自动走真实数据） |
+| 严重度 | 🟢 已修复 |
+| 原状 | 折线图 `baseRates.map(v => v + Math.floor(Math.random() * 6))`，饼图 fallback 硬编码假数字 |
+| 修复 | 新增 `GET /api/stats/weekly-usage` 端点，从 `course_schedules` + `classroom_reservations` 计算近 7 天真实占用率；饼图 fallback → 0 |
 
 ### 3.5 环境监测数据是 `Math.random()`
 
@@ -240,11 +239,7 @@
 
 ## 七、修复优先级建议
 
-### S1 — 上线前必须修（预计 0.5 天）
-
-```
-1. Dashboard 数据从后端取
-```
+### S1 — 上线前必须修（0 项 ✅）
 
 ### S2 — 首周迭代（预计 2-3 天）
 

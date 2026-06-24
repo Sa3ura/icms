@@ -865,3 +865,35 @@ export const apiGetDashboardStats = () => {
     return { classroomTotal, todayReservations, pendingApprovals, pendingWorkOrders, faultyDevices };
   });
 };
+
+export const apiGetWeeklyUsage = () => {
+  if (!USE_MOCK) {
+    return request.get('/api/stats/weekly-usage');
+  }
+
+  return mockRequest('getWeeklyUsage', () => {
+    const today = new Date();
+    const classrooms = db.getTable('classrooms').filter(c => !c.deleted);
+    const total = classrooms.length || 1;
+    const result = [];
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().slice(0, 10);
+      const dayOfWeek = date.getDay() || 7;
+
+      const scheduleRooms = new Set();
+      db.getTable('course_schedules').filter(s => !s.deleted && s.weekday === dayOfWeek)
+        .forEach(s => scheduleRooms.add(s.classroom_id));
+
+      const resRooms = new Set();
+      db.getTable('classroom_reservations').filter(r => !r.deleted && r.reservation_date === dateStr && r.status === 'approved')
+        .forEach(r => resRooms.add(r.classroom_id));
+
+      const occupied = new Set([...scheduleRooms, ...resRooms]);
+      const rate = Math.min(100, Math.round(occupied.size * 100 / total));
+      result.push({ date: dateStr, dayOfWeek, rate });
+    }
+    return result;
+  });
+};

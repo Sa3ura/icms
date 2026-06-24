@@ -196,7 +196,8 @@ import {
   apiGetClassrooms, 
   apiGetReservations, 
   apiGetDevices, 
-  apiGetSchedules 
+  apiGetSchedules,
+  apiGetWeeklyUsage
 } from '../../api';
 
 const router = useRouter();
@@ -338,9 +339,19 @@ const updateCharts = async () => {
   if (lineChartRef.value) {
     if (!lineChart) lineChart = echarts.init(lineChartRef.value);
     
-    const baseRates = [35, 42, 58, 62, 45, 68, 72];
-    const modifier = campusFilter.value === '1' ? 5 : (campusFilter.value === '2' ? -8 : 0);
-    const chartRates = baseRates.map(v => Math.min(100, Math.max(0, v + modifier + Math.floor(Math.random() * 6))));
+    let chartRates = [];
+    let chartLabels = [];
+    try {
+      const usageRes = await apiGetWeeklyUsage();
+      if (usageRes.code === 200 && usageRes.data) {
+        const weekLabels = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+        chartLabels = usageRes.data.map(d => weekLabels[d.dayOfWeek]);
+        chartRates = usageRes.data.map(d => d.rate);
+      }
+    } catch {
+      chartRates = [0, 0, 0, 0, 0, 0, 0];
+      chartLabels = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+    }
 
     const lineOption = {
       tooltip: {
@@ -354,7 +365,7 @@ const updateCharts = async () => {
       xAxis: {
         type: 'category',
         boundaryGap: false,
-        data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+        data: chartLabels,
         axisLine: { lineStyle: { color: axisColor } },
         axisLabel: { color: textColor, margin: 16 }
       },
@@ -400,7 +411,7 @@ const updateCharts = async () => {
         else if (d.status === 'scrapped') scrapped++;
       });
     } else {
-      normal = 20; fault = 2; repairing = 1; scrapped = 0;
+      normal = 0; fault = 0; repairing = 0; scrapped = 0;
     }
 
     const pieOption = {
