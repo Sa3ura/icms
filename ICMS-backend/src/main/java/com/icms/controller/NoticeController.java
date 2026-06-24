@@ -2,6 +2,7 @@ package com.icms.controller;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckRole;
+import cn.dev33.satoken.annotation.SaMode;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -55,7 +56,7 @@ public class NoticeController {
         return Result.success(result);
     }
 
-    @SaCheckRole({"admin", "jw"})
+    @SaCheckRole(value = {"admin", "jw"}, mode = SaMode.OR)
     @PostMapping
     public Result<Map<String, Object>> save(@RequestBody Notice notice) {
         if (notice.getId() == null) {
@@ -68,7 +69,7 @@ public class NoticeController {
         return Result.success(BeanUtils.toMap(notice));
     }
 
-    @SaCheckRole({"admin", "jw"})
+    @SaCheckRole(value = {"admin", "jw"}, mode = SaMode.OR)
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {
         noticeService.removeById(id);

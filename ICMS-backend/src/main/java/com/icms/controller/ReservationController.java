@@ -2,6 +2,7 @@ package com.icms.controller;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckRole;
+import cn.dev33.satoken.annotation.SaMode;
 import com.icms.common.annotation.Log;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -81,7 +82,7 @@ public class ReservationController {
         return Result.success(BeanUtils.toMap(data));
     }
 
-    @SaCheckRole({"admin", "jw"})
+    @SaCheckRole(value = {"admin", "jw"}, mode = SaMode.OR)
     @Log("审批教室预约")
     @PostMapping("/{id}/approve")
     public Result<Map<String, Object>> approve(

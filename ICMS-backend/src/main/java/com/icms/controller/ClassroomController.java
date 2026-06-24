@@ -2,6 +2,7 @@ package com.icms.controller;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckRole;
+import cn.dev33.satoken.annotation.SaMode;
 import com.icms.common.annotation.Log;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -59,7 +60,7 @@ public class ClassroomController {
         return Result.success(result);
     }
 
-    @SaCheckRole({"admin", "jw"})
+    @SaCheckRole(value = {"admin", "jw"}, mode = SaMode.OR)
     @Log("新增或修改教室资源")
     @PostMapping
     public Result<Map<String, Object>> save(@RequestBody Classroom classroom) {
@@ -67,7 +68,7 @@ public class ClassroomController {
         return Result.success(BeanUtils.toMap(classroom));
     }
 
-    @SaCheckRole({"admin", "jw"})
+    @SaCheckRole(value = {"admin", "jw"}, mode = SaMode.OR)
     @Log("删除教室资源")
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {

@@ -2,6 +2,7 @@ package com.icms.controller;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckRole;
+import cn.dev33.satoken.annotation.SaMode;
 import com.icms.common.annotation.Log;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -34,7 +35,7 @@ public class UserController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @SaCheckRole({"admin", "jw"})
+    @SaCheckRole(value = {"admin", "jw"}, mode = SaMode.OR)
     @GetMapping
     public Result<Map<String, Object>> list(
             @RequestParam(required = false) String user_type,
@@ -63,7 +64,7 @@ public class UserController {
         return Result.success(result);
     }
 
-    @SaCheckRole({"admin", "jw"})
+    @SaCheckRole(value = {"admin", "jw"}, mode = SaMode.OR)
     @Log("创建或编辑系统账号")
     @PostMapping
     public Result<Map<String, Object>> save(@RequestBody SysUser user) {
@@ -99,7 +100,7 @@ public class UserController {
         return Result.success();
     }
 
-    @SaCheckRole({"admin", "jw"})
+    @SaCheckRole(value = {"admin", "jw"}, mode = SaMode.OR)
     @Log("重置用户密码")
     @PostMapping("/{id}/reset-pwd")
     public Result<Void> resetPwd(@PathVariable Long id, @RequestBody Map<String, String> body) {
@@ -117,7 +118,7 @@ public class UserController {
         return Result.success();
     }
 
-    @SaCheckRole({"admin", "jw"})
+    @SaCheckRole(value = {"admin", "jw"}, mode = SaMode.OR)
     @GetMapping("/logs")
     public Result<Map<String, Object>> getLogs(
             @RequestParam(defaultValue = "1") Integer page,

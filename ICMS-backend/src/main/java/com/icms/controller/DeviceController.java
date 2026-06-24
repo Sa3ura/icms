@@ -2,6 +2,7 @@ package com.icms.controller;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckRole;
+import cn.dev33.satoken.annotation.SaMode;
 import com.icms.common.annotation.Log;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -64,7 +65,7 @@ public class DeviceController {
         return Result.success(result);
     }
 
-    @SaCheckRole({"admin", "jw"})
+    @SaCheckRole(value = {"admin", "jw"}, mode = SaMode.OR)
     @Log("录入或修改设备档案")
     @PostMapping
     public Result<Map<String, Object>> save(@RequestBody Device device) {
@@ -72,7 +73,7 @@ public class DeviceController {
         return Result.success(BeanUtils.toMap(device));
     }
 
-    @SaCheckRole({"admin", "jw"})
+    @SaCheckRole(value = {"admin", "jw"}, mode = SaMode.OR)
     @Log("删除设备档案")
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {
