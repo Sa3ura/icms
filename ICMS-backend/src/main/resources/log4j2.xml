@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" monitorInterval="30">
+    <Properties>
+        <Property name="LOG_PATTERN">%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</Property>
+        <Property name="CONSOLE_PATTERN">%d{HH:mm:ss.SSS} %highlight{%-5level} %style{%-40logger{1.}}{cyan} - %msg%n</Property>
+        <Property name="LOG_DIR">logs</Property>
+    </Properties>
+
+    <Appenders>
+        <!-- 控制台：彩色简洁格式 -->
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="${CONSOLE_PATTERN}" disableAnsi="false"/>
+        </Console>
+
+        <!-- 滚动文件：应用日志 (30 天保留，10MB 切分) -->
+        <RollingFile name="AppFile" fileName="${LOG_DIR}/icms-app.log"
+                     filePattern="${LOG_DIR}/icms-app-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+                <SizeBasedTriggeringPolicy size="10 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="30"/>
+        </RollingFile>
+
+        <!-- 滚动文件：SQL 日志单独输出 -->
+        <RollingFile name="SqlFile" fileName="${LOG_DIR}/icms-sql.log"
+                     filePattern="${LOG_DIR}/icms-sql-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+                <SizeBasedTriggeringPolicy size="10 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="10"/>
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+        <!-- Spring 框架：只记录 WARN 以上 -->
+        <Logger name="org.springframework" level="WARN"/>
+        <Logger name="org.springframework.boot" level="WARN"/>
+        <Logger name="org.springframework.web" level="WARN"/>
+
+        <!-- 内嵌 Tomcat -->
+        <Logger name="org.apache.catalina" level="WARN"/>
+        <Logger name="org.apache.tomcat" level="WARN"/>
+
+        <!-- 数据库连接池 -->
+        <Logger name="com.zaxxer.hikari" level="WARN"/>
+
+        <!-- MyBatis / MyBatis-Plus SQL 日志 -->
+        <Logger name="com.icms.mapper" level="DEBUG" additivity="false">
+            <AppenderRef ref="SqlFile"/>
+            <AppenderRef ref="Console"/>
+        </Logger>
+
+        <!-- Flyway 迁移日志 -->
+        <Logger name="org.flywaydb" level="INFO" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="AppFile"/>
+        </Logger>
+
+        <!-- SaToken -->
+        <Logger name="cn.dev33.satoken" level="WARN"/>
+
+        <!-- ICMS 业务日志 -->
+        <Logger name="com.icms" level="INFO" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="AppFile"/>
+        </Logger>
+
+        <!-- 根 Logger：只输出 WARN 及以上 -->
+        <Root level="WARN">
+            <AppenderRef ref="Console"/>
+        </Root>
+    </Loggers>
+</Configuration>

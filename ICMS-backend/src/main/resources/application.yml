@@ -20,7 +20,7 @@ spring:
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true # 开启下划线转驼峰
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # 打印 SQL
+    log-impl: org.apache.ibatis.logging.log4j2.Log4j2Impl # Log4j2 输出 SQL
   global-config:
     db-config:
       id-type: auto # 主键自增
