@@ -100,6 +100,13 @@ const mockRequest = async (action, dataCallback) => {
   }
 };
 
+const mockPaginate = (arr, page, pageSize) => {
+  const total = arr.length;
+  const start = (page - 1) * pageSize;
+  const records = arr.slice(start, start + pageSize);
+  return { total, records };
+};
+
 // 模拟写入操作日志
 const logOperation = (username, operation, method, url, params, status, errorMsg = null) => {
   db.insert('operation_logs', {
@@ -182,9 +189,9 @@ export const apiChangePassword = (userId, oldPassword, newPassword, username) =>
 };
 
 // ==================== 2. 教室管理 ====================
-export const apiGetClassrooms = (query = {}) => {
+export const apiGetClassrooms = ({ page = 1, pageSize = 10, ...query } = {}) => {
   if (!USE_MOCK) {
-    return request.get('/api/classrooms', { params: query });
+    return request.get('/api/classrooms', { params: { page, pageSize, ...query } });
   }
   
   return mockRequest('getClassrooms', () => {
@@ -198,7 +205,7 @@ export const apiGetClassrooms = (query = {}) => {
       const kw = query.keyword.toLowerCase();
       classrooms = classrooms.filter(c => c.name.toLowerCase().includes(kw) || c.room_no.toLowerCase().includes(kw));
     }
-    return classrooms;
+    return mockPaginate(classrooms, page, pageSize);
   });
 };
 
@@ -352,9 +359,9 @@ export const apiCheckConflict = (classroom_id, date, startSection, endSection) =
 };
 
 // ==================== 4. 预约管理 ====================
-export const apiGetReservations = (query = {}) => {
+export const apiGetReservations = ({ page = 1, pageSize = 10, ...query } = {}) => {
   if (!USE_MOCK) {
-    return request.get('/api/reservations', { params: query });
+    return request.get('/api/reservations', { params: { page, pageSize, ...query } });
   }
   
   return mockRequest('getReservations', () => {
@@ -366,7 +373,8 @@ export const apiGetReservations = (query = {}) => {
       const [start, end] = query.date_range;
       list = list.filter(r => r.reservation_date >= start && r.reservation_date <= end);
     }
-    return list.sort((a, b) => b.id - a.id);
+    list = list.sort((a, b) => b.id - a.id);
+    return mockPaginate(list, page, pageSize);
   });
 };
 
@@ -438,9 +446,9 @@ export const apiCancelReservation = (id, username) => {
 };
 
 // ==================== 5. 设备管理 ====================
-export const apiGetDevices = (query = {}) => {
+export const apiGetDevices = ({ page = 1, pageSize = 10, ...query } = {}) => {
   if (!USE_MOCK) {
-    return request.get('/api/devices', { params: query });
+    return request.get('/api/devices', { params: { page, pageSize, ...query } });
   }
   
   return mockRequest('getDevices', () => {
@@ -453,10 +461,11 @@ export const apiGetDevices = (query = {}) => {
       list = list.filter(d => d.device_name.toLowerCase().includes(kw) || d.device_code.toLowerCase().includes(kw));
     }
     const classrooms = db.getTable('classrooms');
-    return list.map(device => {
+    list = list.map(device => {
       const room = classrooms.find(c => Number(c.id) === Number(device.classroom_id));
       return { ...device, classroom_name: room ? room.name : '未分配' };
     });
+    return mockPaginate(list, page, pageSize);
   });
 };
 
@@ -495,9 +504,9 @@ export const apiDeleteDevice = (id, username) => {
 };
 
 // ==================== 6. 报修与工单 ====================
-export const apiGetWorkOrders = (query = {}) => {
+export const apiGetWorkOrders = ({ page = 1, pageSize = 10, ...query } = {}) => {
   if (!USE_MOCK) {
-    return request.get('/api/work-orders', { params: query });
+    return request.get('/api/work-orders', { params: { page, pageSize, ...query } });
   }
   
   return mockRequest('getWorkOrders', () => {
@@ -507,7 +516,8 @@ export const apiGetWorkOrders = (query = {}) => {
     if (query.status) list = list.filter(w => w.status === query.status);
     if (query.fault_level) list = list.filter(w => w.fault_level === query.fault_level);
     if (query.classroom_id) list = list.filter(w => Number(w.classroom_id) === Number(query.classroom_id));
-    return list.sort((a, b) => b.id - a.id);
+    list = list.sort((a, b) => b.id - a.id);
+    return mockPaginate(list, page, pageSize);
   });
 };
 
@@ -630,17 +640,19 @@ export const apiGetEnvironmentData = (classroomId) => {
 };
 
 // ==================== 8. 通知公告 ====================
-export const apiGetNotices = (userId) => {
+export const apiGetNotices = ({ page = 1, pageSize = 10, ...query } = {}) => {
   if (!USE_MOCK) {
-    return request.get('/api/notices');
+    return request.get('/api/notices', { params: { page, pageSize } });
   }
 
   return mockRequest('getNotices', () => {
     const all = db.getTable('notices').sort((a, b) => b.id - a.id);
-    return all.map(n => ({
+    const userId = query.userId;
+    const enriched = all.map(n => ({
       ...n,
       is_read: Array.isArray(n.read_by) && n.read_by.includes(Number(userId))
     }));
+    return mockPaginate(enriched, page, pageSize);
   });
 };
 
@@ -720,9 +732,9 @@ export const apiMarkAllNoticesRead = (role, userId) => {
 };
 
 // ==================== 9. 用户与系统管理 ====================
-export const apiGetUsers = (query = {}) => {
+export const apiGetUsers = ({ page = 1, pageSize = 10, ...query } = {}) => {
   if (!USE_MOCK) {
-    return request.get('/api/users', { params: query });
+    return request.get('/api/users', { params: { page, pageSize, ...query } });
   }
   
   return mockRequest('getUsers', () => {
@@ -732,7 +744,7 @@ export const apiGetUsers = (query = {}) => {
       const kw = query.keyword.toLowerCase();
       list = list.filter(u => u.username.toLowerCase().includes(kw) || u.real_name.toLowerCase().includes(kw));
     }
-    return list;
+    return mockPaginate(list, page, pageSize);
   });
 };
 
@@ -770,20 +782,21 @@ export const apiResetPassword = (id, newPassword, username) => {
   });
 };
 
-export const apiGetLogs = () => {
+export const apiGetLogs = ({ page = 1, pageSize = 10 } = {}) => {
   if (!USE_MOCK) {
-    return request.get('/api/users/logs');
+    return request.get('/api/users/logs', { params: { page, pageSize } });
   }
   
   return mockRequest('getLogs', () => {
-    return db.getTable('operation_logs').sort((a, b) => b.id - a.id);
+    const list = db.getTable('operation_logs').sort((a, b) => b.id - a.id);
+    return mockPaginate(list, page, pageSize);
   });
 };
 
 // ==================== 10. 排课管理 ====================
-export const apiGetSchedules = (query = {}) => {
+export const apiGetSchedules = ({ page = 1, pageSize = 10, ...query } = {}) => {
   if (!USE_MOCK) {
-    return request.get('/api/schedules', { params: query });
+    return request.get('/api/schedules', { params: { page, pageSize, ...query } });
   }
   
   return mockRequest('getSchedules', () => {
@@ -791,7 +804,7 @@ export const apiGetSchedules = (query = {}) => {
     if (query.classroom_id) list = list.filter(s => Number(s.classroom_id) === Number(query.classroom_id));
     if (query.weekday) list = list.filter(s => Number(s.weekday) === Number(query.weekday));
     if (query.teacher_name) list = list.filter(s => s.teacher_name.includes(query.teacher_name));
-    return list;
+    return mockPaginate(list, page, pageSize);
   });
 };
 

@@ -4,6 +4,8 @@ import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import com.icms.common.annotation.Log;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.icms.common.BeanUtils;
 import com.icms.common.Result;
 import com.icms.entity.Classroom;
@@ -34,11 +36,13 @@ public class ReservationController {
     private SysUserService sysUserService;
 
     @GetMapping
-    public Result<List<Map<String, Object>>> list(
+    public Result<Map<String, Object>> list(
             @RequestParam(required = false) Long applicant_id,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) Long classroom_id,
-            @RequestParam(required = false) List<String> date_range) {
+            @RequestParam(required = false) List<String> date_range,
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer pageSize) {
 
         LambdaQueryWrapper<ClassroomReservation> query = new LambdaQueryWrapper<ClassroomReservation>();
         if (applicant_id != null) query.eq(ClassroomReservation::getApplicantId, applicant_id);
@@ -50,11 +54,12 @@ public class ReservationController {
         }
         
         query.orderByDesc(ClassroomReservation::getId);
-        List<ClassroomReservation> list = classroomReservationService.list(query);
+        Page<ClassroomReservation> mpPage = new Page<>(page, pageSize);
+        IPage<ClassroomReservation> ipage = classroomReservationService.page(mpPage, query);
         List<Classroom> rooms = classroomService.list();
         List<SysUser> users = sysUserService.list();
 
-        List<Map<String, Object>> result = list.stream().map(r -> {
+        List<Map<String, Object>> records = ipage.getRecords().stream().map(r -> {
             Map<String, Object> map = BeanUtils.toMap(r);
             Classroom cr = rooms.stream().filter(c -> c.getId().equals(r.getClassroomId())).findFirst().orElse(null);
             map.put("classroom_name", cr != null ? cr.getName() : "");
@@ -63,6 +68,9 @@ public class ReservationController {
             return map;
         }).collect(Collectors.toList());
 
+        Map<String, Object> result = new HashMap<>();
+        result.put("total", ipage.getTotal());
+        result.put("records", records);
         return Result.success(result);
     }
 

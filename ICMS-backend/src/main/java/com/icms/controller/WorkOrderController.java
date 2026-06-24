@@ -4,6 +4,8 @@ import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import com.icms.common.annotation.Log;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.icms.common.BeanUtils;
 import com.icms.common.Result;
 import com.icms.entity.Classroom;
@@ -38,12 +40,14 @@ public class WorkOrderController {
     private SysUserService sysUserService;
 
     @GetMapping
-    public Result<List<Map<String, Object>>> list(
+    public Result<Map<String, Object>> list(
             @RequestParam(required = false) Long reporter_id,
             @RequestParam(required = false) Long handler_id,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String fault_level,
-            @RequestParam(required = false) Long classroom_id) {
+            @RequestParam(required = false) Long classroom_id,
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer pageSize) {
 
         LambdaQueryWrapper<WorkOrder> query = new LambdaQueryWrapper<WorkOrder>();
         if (reporter_id != null) query.eq(WorkOrder::getReporterId, reporter_id);
@@ -53,12 +57,14 @@ public class WorkOrderController {
         if (classroom_id != null) query.eq(WorkOrder::getClassroomId, classroom_id);
 
         query.orderByDesc(WorkOrder::getId);
-        List<WorkOrder> list = workOrderService.list(query);
+        Page<WorkOrder> mpPage = new Page<>(page, pageSize);
+        IPage<WorkOrder> ipage = workOrderService.page(mpPage, query);
+
         List<Classroom> rooms = classroomService.list();
         List<Device> devices = deviceService.list();
         List<SysUser> users = sysUserService.list();
 
-        List<Map<String, Object>> result = list.stream().map(w -> {
+        List<Map<String, Object>> records = ipage.getRecords().stream().map(w -> {
             Map<String, Object> map = BeanUtils.toMap(w);
             Classroom r = rooms.stream().filter(cr -> cr.getId().equals(w.getClassroomId())).findFirst().orElse(null);
             map.put("classroom_name", r != null ? r.getName() : "");
@@ -71,6 +77,9 @@ public class WorkOrderController {
             return map;
         }).collect(Collectors.toList());
 
+        Map<String, Object> result = new HashMap<>();
+        result.put("total", ipage.getTotal());
+        result.put("records", records);
         return Result.success(result);
     }
 

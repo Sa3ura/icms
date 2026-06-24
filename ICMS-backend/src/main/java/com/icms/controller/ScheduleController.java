@@ -4,6 +4,8 @@ import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import com.icms.common.annotation.Log;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.icms.common.BeanUtils;
 import com.icms.common.Result;
 import com.icms.entity.CourseSchedule;
@@ -24,17 +26,28 @@ public class ScheduleController {
     private CourseScheduleService courseScheduleService;
 
     @GetMapping
-    public Result<List<Map<String, Object>>> list(
+    public Result<Map<String, Object>> list(
             @RequestParam(required = false) Long classroom_id,
             @RequestParam(required = false) Integer weekday,
-            @RequestParam(required = false) String teacher_name) {
+            @RequestParam(required = false) String teacher_name,
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer pageSize) {
 
         LambdaQueryWrapper<CourseSchedule> query = new LambdaQueryWrapper<CourseSchedule>();
         if (classroom_id != null) query.eq(CourseSchedule::getClassroomId, classroom_id);
         if (weekday != null) query.eq(CourseSchedule::getWeekday, weekday);
 
-        List<CourseSchedule> list = courseScheduleService.list(query);
-        return Result.success(list.stream().map(BeanUtils::toMap).collect(Collectors.toList()));
+        Page<CourseSchedule> mpPage = new Page<>(page, pageSize);
+        IPage<CourseSchedule> ipage = courseScheduleService.page(mpPage, query);
+
+        List<Map<String, Object>> records = ipage.getRecords().stream()
+                .map(BeanUtils::toMap)
+                .collect(Collectors.toList());
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("total", ipage.getTotal());
+        result.put("records", records);
+        return Result.success(result);
     }
 
     @SaCheckRole({"admin", "jw"})

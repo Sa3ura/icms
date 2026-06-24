@@ -139,6 +139,18 @@
           width="165"
         />
       </el-table>
+
+      <el-pagination
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :total="total"
+        :page-sizes="[10, 20, 50, 100]"
+        layout="total, sizes, prev, pager, next, jumper"
+        background
+        class="pagination-bar"
+        @current-change="handlePageChange"
+        @size-change="handleSizeChange"
+      />
     </el-card>
   </div>
 </template>
@@ -150,6 +162,9 @@ import { apiGetLogs } from '../../api';
 
 const loading = ref(false);
 const tableData = ref([]);
+const total = ref(0);
+const currentPage = ref(1);
+const pageSize = ref(10);
 
 const filters = ref({
   username: '',
@@ -157,6 +172,17 @@ const filters = ref({
 });
 
 import { getMethodTag } from '../../utils/mappings';
+
+const handlePageChange = (page) => {
+  currentPage.value = page;
+  loadData();
+};
+
+const handleSizeChange = (size) => {
+  pageSize.value = size;
+  currentPage.value = 1;
+  loadData();
+};
 
 const resetFilters = () => {
   filters.value = { username: '', operation: '' };
@@ -166,9 +192,9 @@ const resetFilters = () => {
 const loadData = async () => {
   loading.value = true;
   try {
-    const res = await apiGetLogs();
+    const res = await apiGetLogs({ page: currentPage.value, pageSize: pageSize.value });
     if (res.code === 200) {
-      let list = res.data;
+      let list = res.data.records;
       if (filters.value.username) {
         list = list.filter(l => l.username.toLowerCase().includes(filters.value.username.toLowerCase()));
       }
@@ -176,6 +202,7 @@ const loadData = async () => {
         list = list.filter(l => l.operation.toLowerCase().includes(filters.value.operation.toLowerCase()));
       }
       tableData.value = list;
+      total.value = res.data.total;
     }
   } catch (error) {
     ElMessage.error('无法读取操作审计日志');
@@ -205,5 +232,11 @@ onMounted(() => {
 
 .text-secondary {
   color: var(--text-secondary);
+}
+
+.pagination-bar {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
 }
 </style>

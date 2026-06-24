@@ -243,6 +243,18 @@
           </template>
         </el-table-column>
       </el-table>
+
+      <el-pagination
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :total="total"
+        :page-sizes="[10, 20, 50, 100]"
+        layout="total, sizes, prev, pager, next, jumper"
+        background
+        class="pagination-bar"
+        @current-change="handlePageChange"
+        @size-change="handleSizeChange"
+      />
     </el-card>
 
     <!-- 1. 新增报修弹窗 -->
@@ -573,6 +585,9 @@ const handleDialogVisible = ref(false);
 const detailsVisible = ref(false);
 
 const tableData = ref([]);
+const total = ref(0);
+const currentPage = ref(1);
+const pageSize = ref(10);
 const classrooms = ref([]);
 const formDevices = ref([]); // 动态绑定的故障设备下拉
 const repairers = ref([]); // 系统里所有的维修工用户
@@ -648,15 +663,27 @@ const loadData = async () => {
       }
     }
 
-    const res = await apiGetWorkOrders(query);
+    const res = await apiGetWorkOrders({ page: currentPage.value, pageSize: pageSize.value, ...query });
     if (res.code === 200) {
-      tableData.value = res.data;
+      tableData.value = res.data.records;
+      total.value = res.data.total;
     }
   } catch (error) {
     ElMessage.error('加载故障工单列表失败');
   } finally {
     loading.value = false;
   }
+};
+
+const handlePageChange = (page) => {
+  currentPage.value = page;
+  loadData();
+};
+
+const handleSizeChange = (size) => {
+  pageSize.value = size;
+  currentPage.value = 1;
+  loadData();
 };
 
 const handleCreate = () => {
@@ -676,9 +703,9 @@ const handleClassroomChange = async (cid) => {
   createForm.value.device_id = null;
   formDevices.value = [];
   if (!cid) return;
-  const res = await apiGetDevices({ classroom_id: cid, status: 'normal' });
+  const res = await apiGetDevices({ pageSize: 10000, classroom_id: cid, status: 'normal' });
   if (res.code === 200) {
-    formDevices.value = res.data;
+    formDevices.value = res.data.records;
   }
 };
 
@@ -810,15 +837,15 @@ const viewDetails = (row) => {
 
 onMounted(async () => {
   loadData();
-  const roomRes = await apiGetClassrooms();
+  const roomRes = await apiGetClassrooms({ pageSize: 10000 });
   if (roomRes.code === 200) {
-    classrooms.value = roomRes.data;
+    classrooms.value = roomRes.data.records;
   }
   
   // 拉取所有维修工人
-  const userRes = await apiGetUsers({ user_type: 'repairer' });
+  const userRes = await apiGetUsers({ pageSize: 10000, user_type: 'repairer' });
   if (userRes.code === 200) {
-    repairers.value = userRes.data;
+    repairers.value = userRes.data.records;
   }
 
   // UX Shortcut: 检查是否有快捷报修跳转过来
@@ -889,5 +916,11 @@ onMounted(async () => {
   font-size: 13px;
   white-space: pre-wrap;
   border: 1px solid var(--border-light);
+}
+
+.pagination-bar {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
 }
 </style>

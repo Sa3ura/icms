@@ -4,6 +4,8 @@ import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import com.icms.common.annotation.Log;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.icms.common.Result;
 import com.icms.entity.Classroom;
 import com.icms.entity.Device;
@@ -29,11 +31,13 @@ public class DeviceController {
     private ClassroomService classroomService;
 
     @GetMapping
-    public Result<List<Map<String, Object>>> list(
+    public Result<Map<String, Object>> list(
             @RequestParam(required = false) Long classroom_id,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String device_type,
-            @RequestParam(required = false) String keyword) {
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer pageSize) {
 
         LambdaQueryWrapper<Device> query = new LambdaQueryWrapper<Device>();
         if (classroom_id != null) query.eq(Device::getClassroomId, classroom_id);
@@ -43,16 +47,20 @@ public class DeviceController {
             query.and(q -> q.like(Device::getDeviceName, keyword).or().like(Device::getDeviceCode, keyword));
         }
 
-        List<Device> list = deviceService.list(query);
+        Page<Device> mpPage = new Page<>(page, pageSize);
+        IPage<Device> ipage = deviceService.page(mpPage, query);
         List<Classroom> rooms = classroomService.list();
 
-        List<Map<String, Object>> result = list.stream().map(d -> {
+        List<Map<String, Object>> records = ipage.getRecords().stream().map(d -> {
             Map<String, Object> map = BeanUtils.toMap(d);
             Classroom r = rooms.stream().filter(cr -> cr.getId().equals(d.getClassroomId())).findFirst().orElse(null);
             map.put("classroom_name", r != null ? r.getName() : "未指派");
             return map;
         }).collect(Collectors.toList());
 
+        Map<String, Object> result = new HashMap<>();
+        result.put("total", ipage.getTotal());
+        result.put("records", records);
         return Result.success(result);
     }
 

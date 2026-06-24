@@ -180,6 +180,18 @@
           </template>
         </el-table-column>
       </el-table>
+
+      <el-pagination
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :total="total"
+        :page-sizes="[10, 20, 50, 100]"
+        layout="total, sizes, prev, pager, next, jumper"
+        background
+        class="pagination-bar"
+        @current-change="handlePageChange"
+        @size-change="handleSizeChange"
+      />
     </el-card>
 
     <!-- 审批弹出框 -->
@@ -243,6 +255,9 @@ const submitLoading = ref(false);
 const dialogVisible = ref(false);
 
 const tableData = ref([]);
+const total = ref(0);
+const currentPage = ref(1);
+const pageSize = ref(10);
 const activeRow = ref(null);
 const actionType = ref('approved'); // approved / rejected
 
@@ -264,18 +279,31 @@ const resetFilters = () => {
   loadData();
 };
 
+const handlePageChange = (page) => {
+  currentPage.value = page;
+  loadData();
+};
+
+const handleSizeChange = (size) => {
+  pageSize.value = size;
+  currentPage.value = 1;
+  loadData();
+};
+
 const loadData = async () => {
   loading.value = true;
   try {
-    const res = await apiGetReservations(filters.value);
+    const params = { page: currentPage.value, pageSize: pageSize.value };
+    if (filters.value.status) params.status = filters.value.status;
+    const res = await apiGetReservations(params);
     if (res.code === 200) {
-      // 模糊匹配申请人名字
-      let list = res.data;
+      let list = res.data.records;
       if (filters.value.keyword) {
         const kw = filters.value.keyword.toLowerCase();
         list = list.filter(r => r.applicant_name.toLowerCase().includes(kw));
       }
       tableData.value = list;
+      total.value = res.data.total;
     }
   } catch (error) {
     ElMessage.error(error.message);
@@ -357,5 +385,11 @@ onMounted(() => {
 .summary-box p {
   margin: 4px 0;
   color: var(--text-main);
+}
+
+.pagination-bar {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
 }
 </style>

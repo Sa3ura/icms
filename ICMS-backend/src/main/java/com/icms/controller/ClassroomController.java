@@ -4,6 +4,8 @@ import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import com.icms.common.annotation.Log;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.icms.common.BeanUtils;
 import com.icms.common.Result;
 import com.icms.entity.Classroom;
@@ -24,13 +26,15 @@ public class ClassroomController {
     private ClassroomService classroomService;
 
     @GetMapping
-    public Result<List<Map<String, Object>>> list(
+    public Result<Map<String, Object>> list(
             @RequestParam(required = false) Long campus_id,
             @RequestParam(required = false) Long building_id,
             @RequestParam(required = false) String room_type,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) Integer min_capacity,
-            @RequestParam(required = false) String keyword) {
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer pageSize) {
 
         LambdaQueryWrapper<Classroom> query = new LambdaQueryWrapper<Classroom>();
         if (campus_id != null) query.eq(Classroom::getCampusId, campus_id);
@@ -42,8 +46,17 @@ public class ClassroomController {
             query.and(q -> q.like(Classroom::getName, keyword).or().like(Classroom::getRoomNo, keyword));
         }
 
-        List<Classroom> list = classroomService.list(query);
-        return Result.success(list.stream().map(BeanUtils::toMap).collect(Collectors.toList()));
+        Page<Classroom> mpPage = new Page<>(page, pageSize);
+        IPage<Classroom> ipage = classroomService.page(mpPage, query);
+
+        List<Map<String, Object>> records = ipage.getRecords().stream()
+                .map(BeanUtils::toMap)
+                .collect(Collectors.toList());
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("total", ipage.getTotal());
+        result.put("records", records);
+        return Result.success(result);
     }
 
     @SaCheckRole({"admin", "jw"})

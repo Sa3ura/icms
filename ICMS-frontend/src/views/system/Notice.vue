@@ -128,6 +128,18 @@
           </template>
         </el-table-column>
       </el-table>
+
+      <el-pagination
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :total="total"
+        :page-sizes="[10, 20, 50, 100]"
+        layout="total, sizes, prev, pager, next, jumper"
+        background
+        class="pagination-bar"
+        @current-change="handlePageChange"
+        @size-change="handleSizeChange"
+      />
     </el-card>
 
     <!-- 发布/编辑弹窗 -->
@@ -281,6 +293,9 @@ const dialogType = ref('create');
 const detailVisible = ref(false);
 const currentNotice = ref(null);
 const tableData = ref([]);
+const total = ref(0);
+const currentPage = ref(1);
+const pageSize = ref(10);
 const formRef = ref(null);
 
 const form = ref({
@@ -309,18 +324,30 @@ const getNoticeTypeTag = (type) => {
 const loadData = async () => {
   loading.value = true;
   try {
-    const res = await apiGetNotices(userStore.userInfo?.id);
+    const res = await apiGetNotices({ page: currentPage.value, pageSize: pageSize.value, userId: userStore.userInfo?.id });
     if (res.code === 200) {
-      tableData.value = res.data.map(n => ({
+      tableData.value = res.data.records.map(n => ({
         ...n,
         read_count: Array.isArray(n.read_by) ? n.read_by.length : 0
       }));
+      total.value = res.data.total;
     }
   } catch (error) {
     ElMessage.error('加载通知列表失败');
   } finally {
     loading.value = false;
   }
+};
+
+const handlePageChange = (page) => {
+  currentPage.value = page;
+  loadData();
+};
+
+const handleSizeChange = (size) => {
+  pageSize.value = size;
+  currentPage.value = 1;
+  loadData();
 };
 
 const handleCreate = () => {
@@ -405,6 +432,13 @@ onMounted(() => {
   color: var(--danger-color);
   font-weight: 500;
 }
+
+.pagination-bar {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+}
+
 .detail-body {
   padding: 10px 0;
 }

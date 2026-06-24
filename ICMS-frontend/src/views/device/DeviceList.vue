@@ -237,6 +237,18 @@
           </template>
         </el-table-column>
       </el-table>
+
+      <el-pagination
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :total="total"
+        :page-sizes="[10, 20, 50, 100]"
+        layout="total, sizes, prev, pager, next, jumper"
+        background
+        class="pagination-bar"
+        @current-change="handlePageChange"
+        @size-change="handleSizeChange"
+      />
     </el-card>
 
     <!-- 新增/编辑弹窗 -->
@@ -493,6 +505,9 @@ const submitLoading = ref(false);
 const dialogVisible = ref(false);
 const dialogType = ref('create'); // create / edit
 const tableData = ref([]);
+const total = ref(0);
+const currentPage = ref(1);
+const pageSize = ref(10);
 
 const classrooms = ref([]);
 
@@ -554,15 +569,27 @@ const resetFilters = () => {
 const loadData = async () => {
   loading.value = true;
   try {
-    const res = await apiGetDevices(filters.value);
+    const res = await apiGetDevices({ page: currentPage.value, pageSize: pageSize.value, ...filters.value });
     if (res.code === 200) {
-      tableData.value = res.data;
+      tableData.value = res.data.records;
+      total.value = res.data.total;
     }
   } catch (error) {
     ElMessage.error(error.message);
   } finally {
     loading.value = false;
   }
+};
+
+const handlePageChange = (page) => {
+  currentPage.value = page;
+  loadData();
+};
+
+const handleSizeChange = (size) => {
+  pageSize.value = size;
+  currentPage.value = 1;
+  loadData();
 };
 
 const handleCreate = () => {
@@ -680,9 +707,9 @@ const submitFault = () => {
 
 onMounted(async () => {
   loadData();
-  const res = await apiGetClassrooms();
+  const res = await apiGetClassrooms({ pageSize: 10000 });
   if (res.code === 200) {
-    classrooms.value = res.data;
+    classrooms.value = res.data.records;
   }
 });
 </script>
@@ -702,5 +729,11 @@ onMounted(async () => {
 
 .w-100 {
   width: 100%;
+}
+
+.pagination-bar {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
 }
 </style>

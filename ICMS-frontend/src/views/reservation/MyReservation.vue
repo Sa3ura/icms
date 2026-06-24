@@ -174,6 +174,18 @@
           </template>
         </el-table-column>
       </el-table>
+
+      <el-pagination
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :total="total"
+        :page-sizes="[10, 20, 50, 100]"
+        layout="total, sizes, prev, pager, next, jumper"
+        background
+        class="pagination-bar"
+        @current-change="handlePageChange"
+        @size-change="handleSizeChange"
+      />
     </el-card>
 
     <!-- 发起预约弹窗 -->
@@ -345,6 +357,9 @@ const loading = ref(false);
 const submitLoading = ref(false);
 const dialogVisible = ref(false);
 const tableData = ref([]);
+const total = ref(0);
+const currentPage = ref(1);
+const pageSize = ref(10);
 
 const classrooms = ref([]);
 
@@ -407,6 +422,17 @@ const disabledPastDates = (time) => {
   return time.getTime() < Date.now() - 3600 * 1000 * 24;
 };
 
+const handlePageChange = (page) => {
+  currentPage.value = page;
+  loadData();
+};
+
+const handleSizeChange = (size) => {
+  pageSize.value = size;
+  currentPage.value = 1;
+  loadData();
+};
+
 // 节次时间显示
 import { getSectionTime, getReservationStatusLabel, getReservationStatusTag } from '../../utils/mappings';
 
@@ -423,9 +449,10 @@ const loadData = async () => {
     if (!['admin', 'jw'].includes(userStore.role)) {
       query.applicant_id = userStore.userInfo.id;
     }
-    const res = await apiGetReservations(query);
+    const res = await apiGetReservations({ page: currentPage.value, pageSize: pageSize.value, ...query });
     if (res.code === 200) {
-      tableData.value = res.data;
+      tableData.value = res.data.records;
+      total.value = res.data.total;
     }
   } catch (error) {
     ElMessage.error(error.message);
@@ -540,9 +567,9 @@ const formRef = ref(null);
 onMounted(async () => {
   loadData();
   // 加载仅限于可用状态的教室，供下拉菜单选用
-  const res = await apiGetClassrooms({ status: 'available' });
+  const res = await apiGetClassrooms({ pageSize: 10000, status: 'available' });
   if (res.code === 200) {
-    classrooms.value = res.data;
+    classrooms.value = res.data.records;
   }
 });
 </script>
@@ -600,5 +627,11 @@ onMounted(async () => {
 .conflict-check-alert {
   margin-left: 90px;
   margin-bottom: 18px;
+}
+
+.pagination-bar {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
 }
 </style>

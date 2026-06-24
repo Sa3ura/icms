@@ -185,6 +185,18 @@
           </template>
         </el-table-column>
       </el-table>
+
+      <el-pagination
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :total="total"
+        :page-sizes="[10, 20, 50, 100]"
+        layout="total, sizes, prev, pager, next, jumper"
+        background
+        class="pagination-bar"
+        @current-change="handlePageChange"
+        @size-change="handleSizeChange"
+      />
     </el-card>
 
     <!-- 新增/编辑弹窗 -->
@@ -337,6 +349,9 @@ const submitLoading = ref(false);
 const dialogVisible = ref(false);
 const dialogType = ref('create'); // create / edit
 const tableData = ref([]);
+const total = ref(0);
+const currentPage = ref(1);
+const pageSize = ref(10);
 
 // 重置密码
 const resetPwdVisible = ref(false);
@@ -378,6 +393,17 @@ const resetRules = {
 const formRef = ref(null);
 const resetFormRef = ref(null);
 
+const handlePageChange = (page) => {
+  currentPage.value = page;
+  loadData();
+};
+
+const handleSizeChange = (size) => {
+  pageSize.value = size;
+  currentPage.value = 1;
+  loadData();
+};
+
 import { getRoleLabel, getRoleTag } from '../../utils/mappings';
 import { Key, Delete, MoreFilled } from '@element-plus/icons-vue';
 
@@ -389,9 +415,10 @@ const resetFilters = () => {
 const loadData = async () => {
   loading.value = true;
   try {
-    const res = await apiGetUsers(filters.value);
+    const res = await apiGetUsers({ page: currentPage.value, pageSize: pageSize.value, ...filters.value });
     if (res.code === 200) {
-      tableData.value = res.data;
+      tableData.value = res.data.records;
+      total.value = res.data.total;
     }
   } catch (error) {
     ElMessage.error('读取用户列表错误');
@@ -538,5 +565,11 @@ onMounted(() => {
 
 .w-100 {
   width: 100%;
+}
+
+.pagination-bar {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
 }
 </style>

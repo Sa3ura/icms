@@ -232,6 +232,18 @@
           </template>
         </el-table-column>
       </el-table>
+
+      <el-pagination
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :total="total"
+        :page-sizes="[10, 20, 50, 100]"
+        layout="total, sizes, prev, pager, next, jumper"
+        background
+        class="pagination-bar"
+        @current-change="handlePageChange"
+        @size-change="handleSizeChange"
+      />
     </el-card>
 
     <!-- 新增/编辑弹窗 -->
@@ -541,6 +553,9 @@ const submitLoading = ref(false);
 const dialogVisible = ref(false);
 const dialogType = ref('create'); // create / edit
 const tableData = ref([]);
+const total = ref(0);
+const currentPage = ref(1);
+const pageSize = ref(10);
 
 const deviceDialogVisible = ref(false);
 const activeRoomName = ref('');
@@ -597,6 +612,17 @@ const rules = {
   name: [{ required: true, message: '请输入教室名称', trigger: 'blur' }]
 };
 
+const handlePageChange = (page) => {
+  currentPage.value = page;
+  loadData();
+};
+
+const handleSizeChange = (size) => {
+  pageSize.value = size;
+  currentPage.value = 1;
+  loadData();
+};
+
 const handleCampusChange = () => {
   filters.value.building_id = '';
 };
@@ -638,9 +664,10 @@ const loadData = async () => {
     if (campusesRes.code === 200) campuses.value = campusesRes.data;
     if (buildingsRes.code === 200) buildings.value = buildingsRes.data;
 
-    const res = await apiGetClassrooms(filters.value);
+    const res = await apiGetClassrooms({ page: currentPage.value, pageSize: pageSize.value, ...filters.value });
     if (res.code === 200) {
-      tableData.value = res.data;
+      tableData.value = res.data.records;
+      total.value = res.data.total;
     }
   } catch (error) {
     ElMessage.error(error.message);
@@ -729,9 +756,9 @@ const handleDropdown = async (command, row) => {
 const viewDevices = async (row) => {
   activeRoomName.value = row.name;
   try {
-    const res = await apiGetDevices({ classroom_id: row.id });
+    const res = await apiGetDevices({ pageSize: 10000, classroom_id: row.id });
     if (res.code === 200) {
-      classroomDevices.value = res.data;
+      classroomDevices.value = res.data.records;
       deviceDialogVisible.value = true;
     }
   } catch (error) {
@@ -750,8 +777,8 @@ const reportDeviceFault = (device) => {
 const viewTimetable = async (row) => {
   activeRoomName.value = row.name;
   try {
-    const schedRes = await apiGetSchedules({ classroom_id: row.id });
-    const resRes = await apiGetReservations({ classroom_id: row.id, status: 'approved' });
+    const schedRes = await apiGetSchedules({ pageSize: 10000, classroom_id: row.id });
+    const resRes = await apiGetReservations({ pageSize: 10000, classroom_id: row.id, status: 'approved' });
 
     if (schedRes.code === 200) activeRoomSchedules.value = schedRes.data;
     if (resRes.code === 200) activeRoomReservations.value = resRes.data;
@@ -789,6 +816,12 @@ onMounted(() => {
 
 .text-secondary {
   color: var(--text-secondary);
+}
+
+.pagination-bar {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
 }
 
 /* 课程排课课表样式 */

@@ -3,6 +3,8 @@ package com.icms.controller;
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.icms.common.Result;
@@ -27,9 +29,14 @@ public class NoticeController {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @GetMapping
-    public Result<List<Map<String, Object>>> list() {
-        List<Notice> notices = noticeService.list(new LambdaQueryWrapper<Notice>().orderByDesc(Notice::getId));
-        List<Map<String, Object>> result = notices.stream().map(n -> {
+    public Result<Map<String, Object>> list(
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer pageSize) {
+        Page<Notice> mpPage = new Page<>(page, pageSize);
+        IPage<Notice> ipage = noticeService.page(mpPage,
+                new LambdaQueryWrapper<Notice>().orderByDesc(Notice::getId));
+
+        List<Map<String, Object>> records = ipage.getRecords().stream().map(n -> {
             Map<String, Object> m = BeanUtils.toMap(n);
             try {
                 List<Long> readBy = objectMapper.readValue(
@@ -41,6 +48,10 @@ public class NoticeController {
             }
             return m;
         }).collect(Collectors.toList());
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("total", ipage.getTotal());
+        result.put("records", records);
         return Result.success(result);
     }
 

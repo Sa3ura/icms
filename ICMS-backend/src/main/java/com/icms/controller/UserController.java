@@ -4,6 +4,8 @@ import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import com.icms.common.annotation.Log;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.icms.common.BeanUtils;
 import com.icms.common.Result;
 import com.icms.entity.OperationLog;
@@ -34,9 +36,11 @@ public class UserController {
 
     @SaCheckRole({"admin", "jw"})
     @GetMapping
-    public Result<List<Map<String, Object>>> list(
+    public Result<Map<String, Object>> list(
             @RequestParam(required = false) String user_type,
-            @RequestParam(required = false) String keyword) {
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer pageSize) {
 
         LambdaQueryWrapper<SysUser> query = new LambdaQueryWrapper<SysUser>();
         if (user_type != null && !user_type.isEmpty()) {
@@ -46,10 +50,16 @@ public class UserController {
             query.and(q -> q.like(SysUser::getUsername, keyword).or().like(SysUser::getRealName, keyword));
         }
 
-        List<SysUser> users = sysUserService.list(query);
-        List<Map<String, Object>> result = users.stream()
+        Page<SysUser> mpPage = new Page<>(page, pageSize);
+        IPage<SysUser> ipage = sysUserService.page(mpPage, query);
+
+        List<Map<String, Object>> records = ipage.getRecords().stream()
                 .map(this::userToMap)
                 .collect(Collectors.toList());
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("total", ipage.getTotal());
+        result.put("records", records);
         return Result.success(result);
     }
 
@@ -109,13 +119,22 @@ public class UserController {
 
     @SaCheckRole({"admin", "jw"})
     @GetMapping("/logs")
-    public Result<List<Map<String, Object>>> getLogs() {
+    public Result<Map<String, Object>> getLogs(
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer pageSize) {
         LambdaQueryWrapper<OperationLog> query = new LambdaQueryWrapper<OperationLog>()
                 .orderByDesc(OperationLog::getId);
-        List<OperationLog> logs = operationLogService.list(query);
-        List<Map<String, Object>> result = logs.stream()
+
+        Page<OperationLog> mpPage = new Page<>(page, pageSize);
+        IPage<OperationLog> ipage = operationLogService.page(mpPage, query);
+
+        List<Map<String, Object>> records = ipage.getRecords().stream()
                 .map(BeanUtils::toMap)
                 .collect(Collectors.toList());
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("total", ipage.getTotal());
+        result.put("records", records);
         return Result.success(result);
     }
 
