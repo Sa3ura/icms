@@ -16,8 +16,9 @@ Intelligent Classroom Management System — 基于 Vue 3 + Spring Boot 的全栈
 | 样式 | Sass + CSS 自定义属性 | — |
 | **后端** | Spring Boot | 3.2.4 |
 | ORM | MyBatis-Plus | 3.5.5 |
-| 安全 | Spring Security + JWT (jjwt) | 0.12.3 |
-| 数据库 | MySQL | 8.x |
+| 认证 | SaToken (JWT 无状态) | 1.38.0 |
+| 安全 | BCrypt + SVG 验证码 + IP 限流 | — |
+| 数据库 | MySQL + Flyway 版本迁移 | 8.x |
 | 构建 | Maven Wrapper | 3.9.6 |
 
 ## 项目结构
@@ -47,14 +48,17 @@ ICMS/
 │   └── eslint.config.js
 │
 ├── ICMS-backend/               # Spring Boot 后端
-│   └── src/main/java/com/icms/
-│       ├── controller/         # REST 控制器 (10 个)
-│       ├── service/            # 业务服务层
-│       ├── mapper/             # MyBatis-Plus 数据访问
-│       ├── entity/             # 数据实体 (12 个)
-│       ├── config/             # Spring 配置
-│       ├── security/           # JWT + Security 鉴权
-│       └── common/             # 统一响应 / 异常处理 / AOP 日志
+│   ├── src/main/java/com/icms/
+│   │   ├── controller/         # REST 控制器 (11 个)
+│   │   ├── service/            # 业务服务层
+│   │   ├── mapper/             # MyBatis-Plus 数据访问
+│   │   ├── entity/             # 数据实体 (13 个)
+│   │   ├── config/             # Spring 配置 + DatabaseInitializer
+│   │   ├── security/           # SaToken / 验证码 / 登录限流
+│   │   └── common/             # 统一响应 / 异常处理 / AOP 日志 / 驼峰转蛇形
+│   └── src/main/resources/
+│       ├── db/migration/       # Flyway 版本化 SQL 迁移
+│       └── application.yml
 │
 ├── ICMS_database_schema_简体.sql  # 数据库建表脚本
 ├── ICMS_需求设计文档.md
@@ -154,14 +158,17 @@ npm run format     # ESLint 自动修复
 ## 特性
 
 - **双模式运行**：Mock 模式（纯前端 localStorage）与真实 API 模式一键切换
+- **安全认证**：SaToken JWT 无状态 + `@SaCheckRole` 注解鉴权 + 双 Token (Access 内存/Refresh httpOnly Cookie) 防 XSS 窃取
+- **登录安全**：后端 SVG 干扰验证码 + 同 IP 5次/5分钟失败封锁 15 分钟
 - **暗黑模式**：CSS 自定义属性 + 平滑主题过渡动画 (`theme-transitioning`)
-- **通知系统**：发布→推送→已读追踪（`read_by[]` 独立状态）+ 30s 轮询
-- **ECharts 按需引入**：仅打包使用到的 Line/Bar/Pie 图表 + CanvasRenderer
+- **通知系统**：发布→推送→已读追踪（`read_by[]` 独立状态）+ 30s 自动轮询
+- **ECharts 按需引入**：仅打包使用的 Line/Bar/Pie 图表 + CanvasRenderer
 - **操作栏优化**：≥3 按钮自动收进 `el-dropdown`，统一"操作 ▾"样式
 - **滚动体验**：8px 滚动条 + Firefox 兼容 + 平滑滚动 + 表格独立横向滚动
 - **Hash 路由**：无服务端 fallback 配置需求，刷新不 404
+- **数据库版本管理**：Flyway `V1__init_schema.sql` → `V2__add_refresh_token.sql` 自动增量迁移
 
 ## 交付状态
 
-当前版本已修复 22 项缺陷，可作为功能完整的原型/Demo 演示。
-生产部署前需完成的 S1 级修复见 `ICMS_交付差距分析.md`。
+已修复 **35 项**缺陷，致命安全漏洞 **4/4 全部清零**，编译/Lint 零错误。  
+可作为安全可靠的原型/Demo 演示。S1 级待修（分页 + 图表数据源）见 `ICMS_交付差距分析.md`。
