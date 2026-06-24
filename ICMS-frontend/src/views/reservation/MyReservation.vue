@@ -85,8 +85,14 @@
         </el-button>
       </div>
 
+      <el-skeleton
+        v-if="loading"
+        :rows="8"
+        animated
+      />
+
       <el-table
-        v-loading="loading"
+        v-else
         :data="tableData"
         style="width: 100%"
       >
