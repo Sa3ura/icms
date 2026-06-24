@@ -110,6 +110,7 @@ public class AuthController {
         cookie.setHttpOnly(true);
         cookie.setPath(rfPath);
         cookie.setMaxAge(0);
+        cookie.setAttribute("SameSite", "Strict");
         response.addCookie(cookie);
 
         return Result.success();

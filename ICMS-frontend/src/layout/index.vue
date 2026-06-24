@@ -424,11 +424,12 @@ const getRoleName = (role) => {
   return mapping[role] || 'Guest';
 };
 
-const handleCommand = (command) => {
+const handleCommand = async (command) => {
   if (command === 'logout') {
-    userStore.logout();
+    await userStore.logout();
     ElMessage.success('已安全退出系统');
-    router.push('/login');
+    window.location.hash = '#/login';
+    window.location.reload();
   } else if (command === 'password') {
     pwdForm.value = { oldPassword: '', newPassword: '', confirmPassword: '' };
     pwdDialogVisible.value = true;
