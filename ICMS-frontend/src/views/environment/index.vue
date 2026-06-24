@@ -210,9 +210,9 @@ import { ElMessage } from 'element-plus';
 import * as echarts from 'echarts/core';
 import { LineChart, BarChart } from 'echarts/charts';
 import { TooltipComponent, GridComponent, LegendComponent } from 'echarts/components';
-import { CanvasRenderer } from 'echarts/renderers';
+import { SVGRenderer } from 'echarts/renderers';
 
-echarts.use([LineChart, BarChart, TooltipComponent, GridComponent, LegendComponent, CanvasRenderer]);
+echarts.use([LineChart, BarChart, TooltipComponent, GridComponent, LegendComponent, SVGRenderer]);
 import { apiGetClassrooms, apiGetEnvironmentData } from '../../api';
 
 const userStore = useUserStore();

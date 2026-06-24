@@ -98,7 +98,7 @@
 
 ---
 
-## 三、高风险 — 数据量与性能 (5 项，2/5 已修复)
+## 三、高风险 — 数据量与性能 (5 项，3/5 已修复)
 
 > **定义**：数据量超过阈值时系统崩溃或不可用。
 
@@ -118,14 +118,13 @@
 | 原状 | ClassroomList / DeviceList / User / Approval / Log — 无 `@input` 事件，搜索必须手动点"查询"按钮 |
 | 修复 | 5 个页面的 keyword 输入框加 `@input="debouncedKeyword"` + `@clear="loadData"`；300ms 防抖自动搜索，输入时自动重置到第 1 页
 
-### 3.3 ECharts CanvasRenderer 516KB
+### 3.3 ECharts CanvasRenderer 516KB ✅ 已修复
 
 | 字段 | 值 |
 |------|-----|
-| 严重度 | 🟡 中 |
-| 现状 | `echarts/renderers` 的 CanvasRenderer 516KB，dashboard 和 environment 页首屏就加载 |
-| 影响 | 首页 JS 包 1.2MB，首屏可交互时间 >2s |
-| 修复方案 | 改为 `SVGRenderer`（体积 ~80KB）或 dynamic import `() => import('echarts/core')` |
+| 严重度 | 🟢 已修复 |
+| 原状 | `echarts/renderers` CanvasRenderer 516KB，dashboard 和 environment 首屏加载 |
+| 修复 | `CanvasRenderer` → `SVGRenderer`（~80KB），图表简单不需 Canvas 性能 |
 
 ### 3.4 Dashboard 图表是随机假数据
 

@@ -188,9 +188,9 @@ import { useUserStore } from '../../store/user';
 import * as echarts from 'echarts/core';
 import { LineChart, PieChart } from 'echarts/charts';
 import { TooltipComponent, GridComponent, LegendComponent } from 'echarts/components';
-import { CanvasRenderer } from 'echarts/renderers';
+import { SVGRenderer } from 'echarts/renderers';
 
-echarts.use([LineChart, PieChart, TooltipComponent, GridComponent, LegendComponent, CanvasRenderer]);
+echarts.use([LineChart, PieChart, TooltipComponent, GridComponent, LegendComponent, SVGRenderer]);
 import { 
   apiGetDashboardStats, 
   apiGetClassrooms, 
