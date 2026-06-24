@@ -120,16 +120,16 @@
           <el-col :span="24">
             <el-form-item label="配套设备">
               <el-checkbox-group v-model="queryForm.devices">
-                <el-checkbox label="projector">
+                <el-checkbox value="projector">
                   投影仪
                 </el-checkbox>
-                <el-checkbox label="whiteboard">
+                <el-checkbox value="whiteboard">
                   电子白板
                 </el-checkbox>
-                <el-checkbox label="camera">
+                <el-checkbox value="camera">
                   云台摄像头
                 </el-checkbox>
-                <el-checkbox label="air_conditioner">
+                <el-checkbox value="air_conditioner">
                   空调
                 </el-checkbox>
               </el-checkbox-group>
