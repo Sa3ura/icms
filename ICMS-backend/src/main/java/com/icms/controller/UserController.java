@@ -2,6 +2,7 @@ package com.icms.controller;
 
 import com.icms.common.annotation.Log;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.icms.common.BeanUtils;
 import com.icms.common.Result;
 import com.icms.entity.OperationLog;
 import com.icms.entity.SysUser;
@@ -12,8 +13,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/users")
@@ -29,7 +30,7 @@ public class UserController {
     private PasswordEncoder passwordEncoder;
 
     @GetMapping
-    public Result<List<SysUser>> list(
+    public Result<List<Map<String, Object>>> list(
             @RequestParam(required = false) String user_type,
             @RequestParam(required = false) String keyword) {
 
@@ -41,21 +42,46 @@ public class UserController {
             query.and(q -> q.like(SysUser::getUsername, keyword).or().like(SysUser::getRealName, keyword));
         }
 
-        return Result.success(sysUserService.list(query));
+        List<SysUser> users = sysUserService.list(query);
+        List<Map<String, Object>> result = users.stream()
+                .map(this::userToMap)
+                .collect(Collectors.toList());
+        return Result.success(result);
     }
 
     @Log("创建或编辑系统账号")
     @PostMapping
-    public Result<SysUser> save(@RequestBody SysUser user) {
+    public Result<Map<String, Object>> save(@RequestBody SysUser user) {
         if (user.getId() == null) {
-            // 新增时，如果有传入密码就用传入的，否则默认为 123456
             String rawPwd = user.getPassword() != null ? user.getPassword() : "123456";
             user.setPassword(passwordEncoder.encode(rawPwd));
             user.setStatus(1);
             user.setCreatedAt(LocalDateTime.now());
         }
         sysUserService.saveOrUpdate(user);
-        return Result.success(user);
+        return Result.success(userToMap(user));
+    }
+
+    @Log("修改个人登录密码")
+    @PostMapping("/{id}/change-pwd")
+    public Result<Void> changePwd(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        String oldPassword = body.get("oldPassword");
+        String newPassword = body.get("newPassword");
+
+        SysUser user = sysUserService.getById(id);
+        if (user == null) {
+            return Result.error("用户不存在");
+        }
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            return Result.error("当前密码错误");
+        }
+        if (newPassword == null || newPassword.length() < 6) {
+            return Result.error("新密码长度至少为 6 位");
+        }
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setUpdatedAt(LocalDateTime.now());
+        sysUserService.updateById(user);
+        return Result.success();
     }
 
     @Log("重置用户密码")
@@ -76,9 +102,20 @@ public class UserController {
     }
 
     @GetMapping("/logs")
-    public Result<List<OperationLog>> getLogs() {
+    public Result<List<Map<String, Object>>> getLogs() {
         LambdaQueryWrapper<OperationLog> query = new LambdaQueryWrapper<OperationLog>()
                 .orderByDesc(OperationLog::getId);
-        return Result.success(operationLogService.list(query));
+        List<OperationLog> logs = operationLogService.list(query);
+        List<Map<String, Object>> result = logs.stream()
+                .map(BeanUtils::toMap)
+                .collect(Collectors.toList());
+        return Result.success(result);
+    }
+
+    private Map<String, Object> userToMap(SysUser user) {
+        Map<String, Object> map = BeanUtils.toMap(user);
+        map.remove("password");
+        map.remove("deleted");
+        return map;
     }
 }

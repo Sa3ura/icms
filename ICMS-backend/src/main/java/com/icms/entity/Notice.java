@@ -18,5 +18,6 @@ public class Notice {
     private String targetRole;
     private Long publisherId;
     private String status;
+    private String readBy;
     private LocalDateTime createdAt;
 }

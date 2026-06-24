@@ -2,6 +2,7 @@ package com.icms.controller;
 
 import com.icms.common.annotation.Log;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.icms.common.BeanUtils;
 import com.icms.common.Result;
 import com.icms.entity.CourseSchedule;
 import com.icms.service.CourseScheduleService;
@@ -9,7 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/schedules")
@@ -19,7 +21,7 @@ public class ScheduleController {
     private CourseScheduleService courseScheduleService;
 
     @GetMapping
-    public Result<List<CourseSchedule>> list(
+    public Result<List<Map<String, Object>>> list(
             @RequestParam(required = false) Long classroom_id,
             @RequestParam(required = false) Integer weekday,
             @RequestParam(required = false) String teacher_name) {
@@ -27,22 +29,14 @@ public class ScheduleController {
         LambdaQueryWrapper<CourseSchedule> query = new LambdaQueryWrapper<CourseSchedule>();
         if (classroom_id != null) query.eq(CourseSchedule::getClassroomId, classroom_id);
         if (weekday != null) query.eq(CourseSchedule::getWeekday, weekday);
-        // 此处为了方便前台联调模糊查询
-        if (teacher_name != null && !teacher_name.isEmpty()) {
-            // 在实际教务系统中可能关联 teacher 实体，为了最简化且匹配本地 mock 结构，我们此处在 courseSchedule 中直接匹配
-            // 注意: 系统设计字段中 teacher_name 是在 mockDb 关联查的，若数据库结构无该列，
-            // 考虑直接按 teacher_id 查询或匹配。
-            // 我们的建表脚本中 teacher_id 存在，无 teacher_name 字段。
-            // 但为了兼容，我们将直接放宽查询或根据 teacherId 过滤。
-        }
 
-        return Result.success(courseScheduleService.list(query));
+        List<CourseSchedule> list = courseScheduleService.list(query);
+        return Result.success(list.stream().map(BeanUtils::toMap).collect(Collectors.toList()));
     }
 
     @Log("录入课程排课")
     @PostMapping
-    public Result<CourseSchedule> save(@RequestBody CourseSchedule schedule) {
-        // 校验排课冲突
+    public Result<Map<String, Object>> save(@RequestBody CourseSchedule schedule) {
         Long classroomId = schedule.getClassroomId();
         Integer weekday = schedule.getWeekday();
         Integer start = schedule.getStartSection();
@@ -68,7 +62,7 @@ public class ScheduleController {
             schedule.setCreatedAt(LocalDateTime.now());
         }
         courseScheduleService.saveOrUpdate(schedule);
-        return Result.success(schedule);
+        return Result.success(BeanUtils.toMap(schedule));
     }
 
     @Log("删除排课课程")

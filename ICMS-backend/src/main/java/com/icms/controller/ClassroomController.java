@@ -2,6 +2,7 @@ package com.icms.controller;
 
 import com.icms.common.annotation.Log;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.icms.common.BeanUtils;
 import com.icms.common.Result;
 import com.icms.entity.Classroom;
 import com.icms.service.ClassroomService;
@@ -9,9 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/classrooms")
@@ -21,7 +21,7 @@ public class ClassroomController {
     private ClassroomService classroomService;
 
     @GetMapping
-    public Result<List<Classroom>> list(
+    public Result<List<Map<String, Object>>> list(
             @RequestParam(required = false) Long campus_id,
             @RequestParam(required = false) Long building_id,
             @RequestParam(required = false) String room_type,
@@ -39,14 +39,15 @@ public class ClassroomController {
             query.and(q -> q.like(Classroom::getName, keyword).or().like(Classroom::getRoomNo, keyword));
         }
 
-        return Result.success(classroomService.list(query));
+        List<Classroom> list = classroomService.list(query);
+        return Result.success(list.stream().map(BeanUtils::toMap).collect(Collectors.toList()));
     }
 
     @Log("新增或修改教室资源")
     @PostMapping
-    public Result<Classroom> save(@RequestBody Classroom classroom) {
+    public Result<Map<String, Object>> save(@RequestBody Classroom classroom) {
         classroomService.saveOrUpdate(classroom);
-        return Result.success(classroom);
+        return Result.success(BeanUtils.toMap(classroom));
     }
 
     @Log("删除教室资源")
@@ -57,7 +58,7 @@ public class ClassroomController {
     }
 
     @GetMapping("/free")
-    public Result<List<Classroom>> getFree(
+    public Result<List<Map<String, Object>>> getFree(
             @RequestParam String date,
             @RequestParam Integer startSection,
             @RequestParam Integer endSection,
@@ -67,7 +68,7 @@ public class ClassroomController {
 
         LocalDate localDate = LocalDate.parse(date);
         List<Classroom> list = classroomService.getFreeClassrooms(localDate, startSection, endSection, campus_id, minCapacity, devices);
-        return Result.success(list);
+        return Result.success(list.stream().map(BeanUtils::toMap).collect(Collectors.toList()));
     }
 
     @GetMapping("/check-conflict")

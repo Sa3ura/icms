@@ -9,7 +9,7 @@ import com.icms.security.JwtUtils;
 import com.icms.service.SysUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
+import com.icms.common.BeanUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,7 +25,6 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
     @Override
     public Map<String, Object> login(String username, String password) {
-        // 查找用户
         SysUser user = this.getOne(new LambdaQueryWrapper<SysUser>()
                 .eq(SysUser::getUsername, username));
         
@@ -33,22 +32,23 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
             throw new CustomException("用户名或密码错误");
         }
         
-        // 校验状态
         if (user.getStatus() != 1) {
             throw new CustomException("该账号已被禁用，请联系管理员");
         }
         
-        // 校验密码
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new CustomException("用户名或密码错误");
         }
         
-        // 生成 JWT Token
         String token = jwtUtils.generateToken(user.getId(), user.getUsername(), user.getUserType());
         
+        Map<String, Object> userInfo = BeanUtils.toMap(user);
+        userInfo.remove("password");
+        userInfo.remove("deleted");
+
         Map<String, Object> result = new HashMap<>();
         result.put("token", token);
-        result.put("userInfo", user);
+        result.put("userInfo", userInfo);
         return result;
     }
 }

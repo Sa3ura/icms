@@ -10,9 +10,9 @@ import com.icms.service.DeviceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.icms.common.BeanUtils;
+
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -42,21 +42,9 @@ public class DeviceController {
 
         List<Device> list = deviceService.list(query);
         List<Classroom> rooms = classroomService.list();
-        
-        // 关联获取教室名称
+
         List<Map<String, Object>> result = list.stream().map(d -> {
-            Map<String, Object> map = new HashMap<>();
-            map.put("id", d.getId());
-            map.put("classroomId", d.getClassroomId());
-            map.put("deviceCode", d.getDeviceCode());
-            map.put("deviceName", d.getDeviceName());
-            map.put("deviceType", d.getDeviceType());
-            map.put("brand", d.getBrand());
-            map.put("model", d.getModel());
-            map.put("status", d.getStatus());
-            map.put("purchaseDate", d.getPurchaseDate());
-            map.put("lastCheckTime", d.getLastCheckTime());
-            
+            Map<String, Object> map = BeanUtils.toMap(d);
             Classroom r = rooms.stream().filter(cr -> cr.getId().equals(d.getClassroomId())).findFirst().orElse(null);
             map.put("classroom_name", r != null ? r.getName() : "未指派");
             return map;
@@ -67,9 +55,9 @@ public class DeviceController {
 
     @Log("录入或修改设备档案")
     @PostMapping
-    public Result<Device> save(@RequestBody Device device) {
+    public Result<Map<String, Object>> save(@RequestBody Device device) {
         deviceService.saveOrUpdate(device);
-        return Result.success(device);
+        return Result.success(BeanUtils.toMap(device));
     }
 
     @Log("删除设备档案")

@@ -204,6 +204,7 @@ CREATE TABLE notice (
   target_role VARCHAR(50),
   publisher_id BIGINT,
   status VARCHAR(20) DEFAULT 'published',
+  read_by JSON,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
