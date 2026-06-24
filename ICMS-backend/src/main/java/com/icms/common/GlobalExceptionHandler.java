@@ -6,6 +6,7 @@ import cn.dev33.satoken.exception.NotPermissionException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @Slf4j
 @RestControllerAdvice
@@ -33,6 +34,12 @@ public class GlobalExceptionHandler {
     public Result<Void> handleNotPermissionException(NotPermissionException e) {
         log.warn("操作权限不足: {}", e.getMessage());
         return Result.error(403, "权限不足，拒绝访问");
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public Result<Void> handleNoResourceFound(NoResourceFoundException e) {
+        log.debug("静态资源不存在: {}", e.getResourcePath());
+        return Result.error(404, "资源不存在");
     }
 
     @ExceptionHandler(Exception.class)
