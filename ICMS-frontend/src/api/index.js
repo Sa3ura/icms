@@ -609,9 +609,14 @@ export const apiGetEnvironmentData = (classroomId) => {
     const room = db.getById('classrooms', cid);
     if (!room) throw new Error('未找到教室');
 
+    const seededRandom = (seed) => {
+      let s = seed | 0;
+      return () => { s = (s + 0x6D2B79F5) | 0; let t = Math.imul(s ^ (s >>> 15), 1 | s); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+    };
+    const rand = seededRandom(cid * 100);
     const getRand = (min, max, decimal = 1) => {
-      const rand = Math.random() * (max - min) + min;
-      return Number(rand.toFixed(decimal));
+      const val = rand() * (max - min) + min;
+      return Number(val.toFixed(decimal));
     };
 
     const current = {

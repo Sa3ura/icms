@@ -98,7 +98,7 @@
 
 ---
 
-## 三、高风险 — 数据量与性能 (5 项，4/5 已修复)
+## 三、高风险 — 数据量与性能 (5 项，5/5 全部已修复 ✅)
 
 > **定义**：数据量超过阈值时系统崩溃或不可用。
 
@@ -134,14 +134,13 @@
 | 原状 | 折线图 `baseRates.map(v => v + Math.floor(Math.random() * 6))`，饼图 fallback 硬编码假数字 |
 | 修复 | 新增 `GET /api/stats/weekly-usage` 端点，从 `course_schedules` + `classroom_reservations` 计算近 7 天真实占用率；饼图 fallback → 0 |
 
-### 3.5 环境监测数据是 `Math.random()`
+### 3.5 环境监测数据是 Math.random() ✅ 已修复
 
 | 字段 | 值 |
 |------|-----|
-| 严重度 | 🟡 中 |
-| 现状 | `api/index.js` `apiGetEnvironmentData` Mock 分支纯随机生成 |
-| 影响 | 无法区分真实传感器数据和模拟数据 |
-| 修复方案 | 对接后端 IoT 数据源（已有 `/api/environment/records` endpoint，Mock 关闭后自动走真实数据） |
+| 严重度 | 🟢 已修复 |
+| 原状 | Mock 模式用 `Math.random()` 无种随机，每次刷新数值全变 |
+| 修复 | Mock 端改用 mulberry32 种子 PRNG（`cid * 100`），同教室下返回值固定；后端已用 `new Random(cid)` 定种 — 两端行为一致 |
 
 ---
 
