@@ -5,51 +5,33 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.icms.common.CustomException;
 import com.icms.entity.SysUser;
 import com.icms.mapper.SysUserMapper;
-import com.icms.security.JwtUtils;
 import com.icms.service.SysUserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import com.icms.common.BeanUtils;
 import org.springframework.stereotype.Service;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Service
 public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> implements SysUserService {
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private JwtUtils jwtUtils;
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
     @Override
-    public Map<String, Object> login(String username, String password) {
+    public SysUser validateLogin(String username, String password) {
         SysUser user = this.getOne(new LambdaQueryWrapper<SysUser>()
                 .eq(SysUser::getUsername, username));
-        
+
         if (user == null) {
             throw new CustomException("用户名或密码错误");
         }
-        
+
         if (user.getStatus() != 1) {
             throw new CustomException("该账号已被禁用，请联系管理员");
         }
-        
+
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new CustomException("用户名或密码错误");
         }
-        
-        String token = jwtUtils.generateToken(user.getId(), user.getUsername(), user.getUserType());
-        
-        Map<String, Object> userInfo = BeanUtils.toMap(user);
-        userInfo.remove("password");
-        userInfo.remove("deleted");
 
-        Map<String, Object> result = new HashMap<>();
-        result.put("token", token);
-        result.put("userInfo", userInfo);
-        return result;
+        return user;
     }
 }

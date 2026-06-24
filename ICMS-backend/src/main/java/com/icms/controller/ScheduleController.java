@@ -1,5 +1,7 @@
 package com.icms.controller;
 
+import cn.dev33.satoken.annotation.SaCheckLogin;
+import cn.dev33.satoken.annotation.SaCheckRole;
 import com.icms.common.annotation.Log;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.icms.common.BeanUtils;
@@ -13,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@SaCheckLogin
 @RestController
 @RequestMapping("/api/schedules")
 public class ScheduleController {
@@ -34,6 +37,7 @@ public class ScheduleController {
         return Result.success(list.stream().map(BeanUtils::toMap).collect(Collectors.toList()));
     }
 
+    @SaCheckRole({"admin", "jw"})
     @Log("录入课程排课")
     @PostMapping
     public Result<Map<String, Object>> save(@RequestBody CourseSchedule schedule) {
@@ -65,6 +69,7 @@ public class ScheduleController {
         return Result.success(BeanUtils.toMap(schedule));
     }
 
+    @SaCheckRole({"admin", "jw"})
     @Log("删除排课课程")
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {

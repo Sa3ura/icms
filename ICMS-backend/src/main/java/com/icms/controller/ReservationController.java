@@ -1,5 +1,7 @@
 package com.icms.controller;
 
+import cn.dev33.satoken.annotation.SaCheckLogin;
+import cn.dev33.satoken.annotation.SaCheckRole;
 import com.icms.common.annotation.Log;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.icms.common.BeanUtils;
@@ -17,6 +19,7 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@SaCheckLogin
 @RestController
 @RequestMapping("/api/reservations")
 public class ReservationController {
@@ -70,6 +73,7 @@ public class ReservationController {
         return Result.success(BeanUtils.toMap(data));
     }
 
+    @SaCheckRole({"admin", "jw"})
     @Log("审批教室预约")
     @PostMapping("/{id}/approve")
     public Result<Map<String, Object>> approve(

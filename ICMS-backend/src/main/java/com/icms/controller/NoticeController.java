@@ -1,5 +1,7 @@
 package com.icms.controller;
 
+import cn.dev33.satoken.annotation.SaCheckLogin;
+import cn.dev33.satoken.annotation.SaCheckRole;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,6 +16,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@SaCheckLogin
 @RestController
 @RequestMapping("/api/notices")
 public class NoticeController {
@@ -41,6 +44,7 @@ public class NoticeController {
         return Result.success(result);
     }
 
+    @SaCheckRole({"admin", "jw"})
     @PostMapping
     public Result<Map<String, Object>> save(@RequestBody Notice notice) {
         if (notice.getId() == null) {
@@ -53,6 +57,7 @@ public class NoticeController {
         return Result.success(BeanUtils.toMap(notice));
     }
 
+    @SaCheckRole({"admin", "jw"})
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {
         noticeService.removeById(id);

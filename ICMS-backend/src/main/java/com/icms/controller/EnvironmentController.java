@@ -1,5 +1,6 @@
 package com.icms.controller;
 
+import cn.dev33.satoken.annotation.SaCheckLogin;
 import com.icms.common.Result;
 import com.icms.entity.Classroom;
 import com.icms.service.ClassroomService;
@@ -11,6 +12,7 @@ import java.math.RoundingMode;
 import java.time.LocalTime;
 import java.util.*;
 
+@SaCheckLogin
 @RestController
 @RequestMapping("/api/environment")
 public class EnvironmentController {

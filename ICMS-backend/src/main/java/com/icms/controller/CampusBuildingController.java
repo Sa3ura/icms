@@ -1,5 +1,6 @@
 package com.icms.controller;
 
+import cn.dev33.satoken.annotation.SaCheckLogin;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.icms.common.BeanUtils;
 import com.icms.common.Result;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@SaCheckLogin
 @RestController
 public class CampusBuildingController {
 

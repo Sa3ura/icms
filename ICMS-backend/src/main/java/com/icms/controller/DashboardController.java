@@ -1,5 +1,6 @@
 package com.icms.controller;
 
+import cn.dev33.satoken.annotation.SaCheckLogin;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.icms.common.Result;
 import com.icms.entity.Classroom;
@@ -20,6 +21,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+@SaCheckLogin
 @RestController
 @RequestMapping("/api/stats")
 public class DashboardController {

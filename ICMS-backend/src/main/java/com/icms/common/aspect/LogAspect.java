@@ -1,5 +1,6 @@
 package com.icms.common.aspect;
 
+import cn.dev33.satoken.stp.StpUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.icms.common.annotation.Log;
 import com.icms.entity.OperationLog;
@@ -11,8 +12,6 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -60,13 +59,15 @@ public class LogAspect {
         }
 
         // 获取用户信息
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())) {
-            opLog.setUsername(auth.getName());
-            if (auth.getCredentials() instanceof Long) {
-                opLog.setUserId((Long) auth.getCredentials());
+        try {
+            Object loginId = StpUtil.getLoginIdDefaultNull();
+            if (loginId != null) {
+                opLog.setUsername((String) StpUtil.getExtra("username"));
+                opLog.setUserId(Long.valueOf(loginId.toString()));
+            } else {
+                opLog.setUsername("Anonymous");
             }
-        } else {
+        } catch (Exception e) {
             opLog.setUsername("Anonymous");
         }
 

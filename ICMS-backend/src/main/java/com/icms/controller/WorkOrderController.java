@@ -1,5 +1,7 @@
 package com.icms.controller;
 
+import cn.dev33.satoken.annotation.SaCheckLogin;
+import cn.dev33.satoken.annotation.SaCheckRole;
 import com.icms.common.annotation.Log;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.icms.common.BeanUtils;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@SaCheckLogin
 @RestController
 @RequestMapping("/api/work-orders")
 public class WorkOrderController {
@@ -78,6 +81,7 @@ public class WorkOrderController {
         return Result.success(BeanUtils.toMap(data));
     }
 
+    @SaCheckRole({"admin", "jw"})
     @Log("指派故障工单")
     @PostMapping("/{id}/assign")
     public Result<Map<String, Object>> assign(
@@ -89,6 +93,7 @@ public class WorkOrderController {
         return Result.success(BeanUtils.toMap(data));
     }
 
+    @SaCheckRole({"admin", "jw", "repairer"})
     @Log("处理故障工单")
     @PostMapping("/{id}/handle")
     public Result<Map<String, Object>> handle(
@@ -100,6 +105,7 @@ public class WorkOrderController {
         return Result.success(BeanUtils.toMap(data));
     }
 
+    @SaCheckRole({"admin", "jw"})
     @Log("关闭故障工单")
     @PostMapping("/{id}/close")
     public Result<Map<String, Object>> close(@PathVariable Long id) {
