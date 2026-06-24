@@ -2,7 +2,7 @@
 <Configuration status="WARN" monitorInterval="30">
     <Properties>
         <Property name="LOG_PATTERN">%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</Property>
-        <Property name="CONSOLE_PATTERN">%d{HH:mm:ss.SSS} %highlight{%-5level} %style{%-40logger{1.}}{cyan} - %msg%n</Property>
+        <Property name="CONSOLE_PATTERN">%d{HH:mm:ss.SSS} %highlight{%-5level} %style{%logger{1.}}{cyan} - %msg%n</Property>
         <Property name="LOG_DIR">logs</Property>
     </Properties>
 
