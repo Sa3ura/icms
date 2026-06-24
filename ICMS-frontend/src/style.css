@@ -1,0 +1,387 @@
+/* ICMS 现代极简设计系统 (Modern Minimalist Design) */
+
+:root {
+  /* 极简色彩体系 - 纯净、克制 */
+  --primary-color: #000000; /* 极致的黑作为主色，配合大量的留白 */
+  --primary-hover: #333333;
+  --primary-light: #f3f4f6;
+  --accent-color: #4f46e5; /* 靛蓝作为高亮色点缀，避免沉闷 */
+  
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --danger-color: #ef4444;
+  --info-color: #6b7280;
+
+  /* 明亮模式配色 */
+  --bg-app: #fafafa;      /* 极浅的高级灰底色 */
+  --bg-sidebar: #ffffff;
+  --bg-header: rgba(255, 255, 255, 0.85);
+  --bg-card: #ffffff;
+  
+  --text-main: #111827;
+  --text-regular: #4b5563;
+  --text-secondary: #9ca3af;
+  --border-light: #f3f4f6; /* 非常淡的边框线 */
+  --border-medium: #e5e7eb;
+  
+  /* 轻量化阴影体系 */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 12px 24px -4px rgba(0, 0, 0, 0.05), 0 8px 12px -6px rgba(0, 0, 0, 0.02);
+  --shadow-float: 0 20px 40px -8px rgba(0,0,0,0.08);
+  
+  /* 毛玻璃参数 */
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --glass-blur: blur(20px);
+  
+  /* 全局圆角 */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+}
+
+/* 暗黑模式配置 (保持极简高反差) */
+html.dark {
+  --primary-color: #ffffff;
+  --primary-hover: #f3f4f6;
+  --primary-light: #1f2937;
+  --accent-color: #818cf8;
+
+  --bg-app: #0a0a0a;
+  --bg-sidebar: #121212;
+  --bg-header: rgba(18, 18, 18, 0.85);
+  --bg-card: #121212;
+  
+  --text-main: #f9fafb;
+  --text-regular: #d1d5db;
+  --text-secondary: #6b7280;
+  --border-light: #1f2937;
+  --border-medium: #374151;
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 12px 24px -4px rgba(0, 0, 0, 0.4);
+  --shadow-float: 0 20px 40px -8px rgba(0,0,0,0.5);
+  
+  --glass-bg: rgba(18, 18, 18, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.05);
+  
+  /* Element Plus 暗黑变量重写 */
+  --el-bg-color: #121212;
+  --el-bg-color-overlay: #1e1e1e;
+  --el-text-color-primary: #f9fafb;
+  --el-text-color-regular: #d1d5db;
+  --el-border-color-light: #1f2937;
+  --el-border-color-lighter: #1f2937;
+}
+
+/* 现代排版与重置 */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-main);
+  background-color: var(--bg-app);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 暗黑模式平滑过渡 — 仅关键表面元素，避免全局 * 导致的性能抖动 */
+html.theme-transitioning,
+html.theme-transitioning body,
+html.theme-transitioning #app,
+html.theme-transitioning .aside-menu,
+html.theme-transitioning .header-area,
+html.theme-transitioning .content-main,
+html.theme-transitioning .el-card,
+html.theme-transitioning .el-table,
+html.theme-transitioning .el-table th,
+html.theme-transitioning .el-table td,
+html.theme-transitioning .el-menu,
+html.theme-transitioning .el-menu-item,
+html.theme-transitioning .el-dialog,
+html.theme-transitioning .el-button,
+html.theme-transitioning .el-input__wrapper,
+html.theme-transitioning .el-textarea__inner,
+html.theme-transitioning .el-tag,
+html.theme-transitioning .el-dropdown-menu,
+html.theme-transitioning .page-container,
+html.theme-transitioning .filter-card,
+html.theme-transitioning .glass-header,
+html.theme-transitioning .notice-panel,
+html.theme-transitioning .el-badge__content,
+html.theme-transitioning .login-wrapper,
+html.theme-transitioning .login-split-container,
+html.theme-transitioning .login-form-wrapper {
+  transition: background-color 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              color 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.theme-transitioning * {
+    transition: none !important;
+  }
+}
+
+/* 优雅的滚动条 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--border-light);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--text-secondary);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-color);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+/* Firefox 滚动条 */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--text-secondary) var(--border-light);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* 全局工具类 */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-md);
+  border-radius: var(--radius-lg);
+}
+
+.hover-scale {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hover-scale:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-float);
+}
+
+.page-container {
+  padding: 32px;
+  max-width: 1400px;
+  margin: 0 auto;
+  min-height: calc(100vh - 60px);
+}
+
+.card-header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* 表格横向滚动容器 */
+.table-card {
+  overflow-x: auto;
+}
+
+/* 数字特效更纯净 */
+.metric-value {
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--text-main);
+  letter-spacing: -1px;
+}
+
+/* =========================================================
+   Element Plus 组件深度美化 (Vercel/Apple Style Overrides)
+   ========================================================= */
+
+/* 颜色重写 */
+:root {
+  --el-color-primary: var(--primary-color) !important;
+  --el-color-success: var(--success-color) !important;
+  --el-color-warning: var(--warning-color) !important;
+  --el-color-danger: var(--danger-color) !important;
+  --el-color-info: var(--info-color) !important;
+  --el-border-radius-base: var(--radius-md) !important;
+  --el-border-radius-small: var(--radius-sm) !important;
+}
+
+/* 卡片去边框，纯白背景，微阴影 */
+.el-card {
+  border: none !important;
+  border-radius: var(--radius-lg) !important;
+  background-color: var(--bg-card) !important;
+  box-shadow: var(--shadow-sm) !important;
+  transition: box-shadow 0.3s ease !important;
+}
+.el-card.is-hover-shadow:hover {
+  box-shadow: var(--shadow-md) !important;
+}
+.el-card__header {
+  border-bottom: 1px solid var(--border-light) !important;
+  padding: 20px 24px !important;
+  font-weight: 600;
+  font-size: 16px;
+}
+.el-card__body {
+  padding: 24px !important;
+}
+
+/* 表格：无边框感、大留白 */
+.el-table {
+  --el-table-border-color: transparent !important;
+  --el-table-header-bg-color: var(--bg-card) !important;
+  --el-table-bg-color: var(--bg-card) !important;
+  --el-table-tr-bg-color: var(--bg-card) !important;
+  background-color: var(--bg-card) !important;
+  width: 100% !important;
+}
+.el-table th.el-table__cell {
+  background-color: var(--bg-card) !important;
+  border-bottom: 1px solid var(--border-medium) !important;
+  color: var(--text-secondary);
+  font-weight: 500;
+  padding: 16px 0 !important;
+  font-size: 13px;
+  white-space: nowrap; /* 防止表头在小屏幕被挤压换行 */
+}
+.el-table td.el-table__cell {
+  border-bottom: 1px solid var(--border-light) !important;
+  padding: 16px 0 !important;
+}
+.el-table::before {
+  display: none; /* 移除表格底部的线 */
+}
+.el-table__row:hover > td.el-table__cell {
+  background-color: var(--primary-light) !important; /* 悬浮背景极浅 */
+}
+
+/* 按钮样式：圆润、现代 */
+.el-button {
+  font-weight: 500;
+  padding: 8px 16px;
+  transition: all 0.2s ease !important;
+}
+.el-button--primary {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  color: var(--bg-app) !important;
+}
+.el-button--primary:hover {
+  background-color: var(--primary-hover) !important;
+  border-color: var(--primary-hover) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* 标签样式 */
+.el-tag {
+  border: none !important;
+  border-radius: var(--radius-sm) !important;
+  font-weight: 500;
+  padding: 0 10px;
+}
+.el-tag--primary { background-color: var(--primary-light); color: var(--primary-color); }
+.el-tag--success { background-color: rgba(16,185,129,0.1); color: var(--success-color); }
+.el-tag--warning { background-color: rgba(245,158,11,0.1); color: var(--warning-color); }
+.el-tag--danger  { background-color: rgba(239,68,68,0.1); color: var(--danger-color); }
+.el-tag--info    { background-color: var(--border-light); color: var(--text-regular); }
+
+/* 输入框与表单 */
+.el-input__wrapper, .el-textarea__inner {
+  box-shadow: 0 0 0 1px var(--border-medium) inset !important;
+  background-color: var(--bg-app) !important;
+  border-radius: var(--radius-md) !important;
+  transition: all 0.2s ease !important;
+}
+.el-input__wrapper.is-focus, .el-textarea__inner:focus {
+  box-shadow: 0 0 0 2px var(--primary-color) inset !important;
+  background-color: var(--bg-card) !important;
+}
+.el-form-item__label {
+  font-weight: 500;
+  color: var(--text-main);
+  padding-bottom: 8px !important;
+}
+
+/* Radio Button 选中状态高反差文字 (深色模式保护) */
+.el-radio-button__original-radio:checked + .el-radio-button__inner {
+  color: var(--bg-app) !important;
+}
+
+/* 对话框 / 抽屉 */
+.el-dialog {
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-float) !important;
+}
+.el-dialog__header {
+  padding: 24px 24px 16px !important;
+  margin-right: 0 !important;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border-light);
+}
+.el-dialog__body {
+  padding: 24px !important;
+}
+
+/* 菜单 */
+.el-menu {
+  border-right: none !important;
+  background-color: transparent !important;
+}
+.el-menu-item {
+  border-radius: var(--radius-md);
+  margin: 4px 12px;
+  height: 48px;
+  line-height: 48px;
+  transition: all 0.2s ease;
+}
+.el-menu--collapse .el-menu-item {
+  margin: 8px auto !important;
+  width: 48px !important;
+  padding: 0 !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.el-menu--collapse .el-tooltip__trigger {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  padding: 0 !important;
+}
+.el-menu--collapse .el-menu-item .el-icon {
+  margin: 0 !important;
+}
+.el-menu-item:hover, .el-menu-item.is-active {
+  background-color: var(--primary-light) !important;
+}
+.el-menu-item.is-active {
+  color: var(--primary-color) !important;
+  font-weight: 600;
+}

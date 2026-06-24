@@ -1,0 +1,31 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://192.168.208.128:3306/icms?useSSL=false&characterEncoding=utf8&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: ***REMOVED***
+
+  sql:
+    init:
+      mode: never # 手动运行建表脚本，不自动运行
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true # 开启下划线转驼峰
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # 打印 SQL
+  global-config:
+    db-config:
+      id-type: auto # 主键自增
+      logic-delete-field: deleted # 逻辑删除字段名
+      logic-delete-value: 1 # 逻辑删除值
+      logic-not-delete-value: 0 # 逻辑未删除值
+
+jwt:
+  secret: ***REMOVED_JWT_SECRET***
+  expiration: 86400 # 24小时 (秒)
+  header: Authorization

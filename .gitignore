@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+ICMS-frontend/node_modules/
+ICMS-backend/target/
+
+# Build output
+dist/
+dist-ssr/
+*.local
+
+# Python
+__pycache__/
+*.py[cod]
+
+# IDE
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env files (keep .env templates, ignore local overrides)
+.env.local
+.env.*.local
+
+# Logs
+*.log
+
+# OpenCode config
+.opencode/
