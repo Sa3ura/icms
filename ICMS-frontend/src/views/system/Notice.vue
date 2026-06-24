@@ -14,14 +14,8 @@
         </el-button>
       </div>
 
-      <el-skeleton
-        v-if="loading"
-        :rows="8"
-        animated
-      />
-
       <el-table
-        v-else
+        v-loading="loading"
         :data="tableData"
         style="width: 100%"
       >
@@ -139,6 +133,13 @@
             </el-dropdown>
           </template>
         </el-table-column>
+        <template #empty>
+          <el-skeleton
+            v-if="loading"
+            :rows="5"
+            animated
+          />
+        </template>
       </el-table>
 
       <el-pagination
