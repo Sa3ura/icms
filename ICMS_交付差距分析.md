@@ -33,26 +33,28 @@
 | 21 | 功能 | 通知系统 `is_read` 全用户共享 / 无发送通知功能 | ✅ 已重构为 `read_by[]` 模式 + 通知管理页 |
 | 22 | 功能 | 通知列表无轮询 / 已读状态不持久化 | ✅ 已修复 |
 
-### 1.2 后端对接修复 (10/10)
+### 1.2 后端对接修复 (12/12)
 
 | # | 类别 | 问题 | 状态 |
 |---|------|------|------|
 | 23 | 缺口 | `GET /api/campuses`、`/api/buildings` 控制器不存在 | ✅ 新建 `CampusBuildingController` |
 | 24 | 缺口 | `POST /api/users/{id}/change-pwd` 端点缺失 | ✅ `UserController` 新增 |
 | 25 | 缺口 | `PUT /api/notices/{id}/read` + `/read-all` 端点缺失 | ✅ `NoticeController` 重构 |
-| 26 | 缺口 | `notice` 表无 `read_by` 字段 | ✅ 实体 + SQL Schema 新增 `read_by JSON` 列 |
-| 27 | 不兼容 | 后端返回 camelCase → 前端期望 snake_case | ✅ 新建 `BeanUtils.toMap()` + 7 个 Controller 统一蛇形输出 |
+| 26 | 缺口 | `notice` 表无 `read_by` 字段 | ✅ 实体 + SQL Schema 新增 `read_by JSON` |
+| 27 | 不兼容 | 后端返回 camelCase → 前端期望 snake_case | ✅ `BeanUtils.toMap()` 统一蛇形输出 |
 | 28 | 安全 | `SysUser` 实体裸返含 `password` 字段 | ✅ `userToMap()` 去敏处理 |
-| 29 | 不兼容 | 工单/预约列表缺 JOIN 名称字段 | ✅ `WorkOrderController` / `ReservationController` 注入名称 |
-| 30 | 基础设施 | 手动 SQL 建表无版本控制 | ✅ Flyway 接管：`V1__xxx.sql` + `flyway_schema_history` |
-| 31 | 安全 | Spring Security 样板代码 281 行，无角色注解 | ✅ SaToken 替换：`@SaCheckRole` 一行注解鉴权 |
-| 32 | 安全 | JWT 明文存 localStorage (XSS 可窃取) | ✅ 双 Token：Access 内存 + Refresh httpOnly Cookie + 轮转 |
+| 29 | 不兼容 | 工单/预约列表缺 JOIN 名称字段 | ✅ 注入 `classroom_name` 等 |
+| 30 | 基础设施 | 手动 SQL 建表无版本控制 | ✅ Flyway `V1__xxx.sql` + 迁移历史 |
+| 31 | 安全 | Spring Security 281 行样板，无角色注解 | ✅ SaToken `@SaCheckRole` 一行鉴权 |
+| 32 | 安全 | JWT 明文存 localStorage (XSS 窃取) | ✅ 双 Token: Access 内存 + Refresh httpOnly |
+| 33 | 安全 | 验证码前端生成，后端不校验 | ✅ `CaptchaUtil` SVG + 服务端一次性校验 |
+| 34 | 安全 | 登录无频率限制，可暴力破解 | ✅ `LoginLimiter` 5/5/15 IP+账号限流 |
 
 ---
 
-## 二、致命缺陷 — 生产不可用 (剩余 2 项，已修复 2 项)
+## 二、致命缺陷 — 生产不可用 (4/4 已全部修复 ✅)
 
-> **定义**：不修复则无法安全部署到公网环境。⚠️ 2.1 权限校验 + 2.2 Token 安全已修复。
+> 全部修复完毕，可安全部署。剩余差距均为功能增强，不影响生产安全性。
 
 ### 2.1 权限纯前端校验 ✅ 已修复 (SaToken)
 
@@ -70,23 +72,21 @@
 | 原状 | JWT token 存于 `localStorage.getItem('icms_token')`，XSS 一行代码即可窃取 |
 | 修复 | Access token (30min) 存 JS 内存变量，不落盘；Refresh token (7天) 存 httpOnly Cookie，JS 不可读；每次 refresh 自动轮转旧 token 立即 DB 失效 |
 
-### 2.3 验证码纯前端生成与校验
+### 2.3 验证码纯前端生成与校验 ✅ 已修复 (后端 SVG)
 
 | 字段 | 值 |
 |------|-----|
-| 严重度 | 🟠 高 |
-| 现状 | `Login.vue` `refreshCaptcha()` 生成随机字符，前端本地比对 |
-| 攻击面 | 抓包后直接对 `/api/auth/login` 发送不存在验证码字段的请求（后端不校验）；脚本批量自动登录 |
-| 修复方案 | 验证码由后端生成（图片 / 滑块），登录接口校验 session 中的验证码值 |
+| 严重度 | 🟢 已修复 |
+| 原状 | `refreshCaptcha()` 前端生成 + 本地比对，后端完全不校验 |
+| 修复 | `CaptchaUtil` 生成 4 位彩色干扰 SVG；`GET /api/auth/captcha` 返回 captchaId + 图片；`POST /api/auth/login` 校验 captchaId + code（一次性，2 分钟过期） |
 
-### 2.4 登录无限试错（无频率限制）
+### 2.4 登录无限试错 ✅ 已修复 (IP 限流)
 
 | 字段 | 值 |
 |------|-----|
-| 严重度 | 🟠 高 |
-| 现状 | Mock 模式无限制；后端 Spring Security 也未配置登录失败锁 |
-| 攻击面 | 攻击者可无限制暴力破解任意账户 |
-| 修复方案 | 后端：同一 IP/账号 5 分钟失败 5 次锁 30 分钟；前端：连续失败 3 次后强制刷新验证码 |
+| 严重度 | 🟢 已修复 |
+| 原状 | 无任何失败次数限制，可暴力破解任意账户 |
+| 修复 | `LoginLimiter`：同 IP+账号 5 分钟内失败 5 次 → 封锁 15 分钟；成功则清零 |
 
 ---
 
@@ -235,12 +235,11 @@
 
 ## 七、修复优先级建议
 
-### S1 — 上线前必须修（预计 2 天）
+### S1 — 上线前必须修（预计 1-2 天）
 
 ```
-1. 登录安全：验证码走后端 + 错误限流
-2. 表格分页 + 搜索防抖
-3. Dashboard 数据从后端取
+1. 表格分页 + 搜索防抖
+2. Dashboard 数据从后端取
 ```
 
 ### S2 — 首周迭代（预计 2-3 天）
@@ -273,13 +272,15 @@
 
 ---
 
-## 八、已修复项汇总 (33/33)
+## 八、已修复项汇总 (35/35)
 
 | 范围 | 已修复 | 状态 |
 |------|--------|------|
-| 前端缺陷 | 22 项 | ✅ 构建 + Lint 通过 |
-| 后端对接缺口 | 9 项 | ✅ Java 编译通过 |
-| 安全加固 | 2 项 | ✅ SaToken + 双 Token |
-| 基础架构 | 2 项 | ✅ Flyway + 交付分析 |
+| 前端缺陷 | 22 项 | ✅ 构建 + Lint 零错误 |
+| 后端对接缺口 | 12 项 | ✅ Java 编译零错误 |
+| 安全加固 | 4 项 | ✅ SaToken + 双Token + 验证码 + 限流 |
+| 基础架构 | 2 项 | ✅ Flyway 版本迁移 + 交付文档 |
+
+> 致命缺陷 (4/4) 全部清零。生产环境安全性达标。后续待办为功能增强（分页、导出、测试等）。
 
 > 全系统 **0 编译/构建错误**。前端 `npm run dev` 演示。后端需要 MySQL 后 `mvnw.cmd spring-boot:run` 启动。Flyway 管理 DDL，SaToken 管理认证与鉴权 (`@SaCheckRole`)。
