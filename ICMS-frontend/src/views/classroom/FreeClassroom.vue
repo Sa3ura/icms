@@ -506,11 +506,11 @@ const resetQuery = () => {
 const viewDetail = async (room) => {
   selectedRoom.value = room;
   try {
-    const schedRes = await apiGetSchedules({ classroom_id: room.id });
-    const resRes = await apiGetReservations({ classroom_id: room.id, status: 'approved' });
+    const schedRes = await apiGetSchedules({ pageSize: 10000, classroom_id: room.id });
+    const resRes = await apiGetReservations({ pageSize: 10000, classroom_id: room.id, status: 'approved' });
 
-    if (schedRes.code === 200) activeRoomSchedules.value = schedRes.data;
-    if (resRes.code === 200) activeRoomReservations.value = resRes.data;
+    if (schedRes.code === 200) activeRoomSchedules.value = schedRes.data.records;
+    if (resRes.code === 200) activeRoomReservations.value = resRes.data.records;
 
     timetableVisible.value = true;
   } catch (error) {

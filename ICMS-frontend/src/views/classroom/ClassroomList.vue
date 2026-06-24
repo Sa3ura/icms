@@ -848,8 +848,8 @@ const viewTimetable = async (row) => {
     const schedRes = await apiGetSchedules({ pageSize: 10000, classroom_id: row.id });
     const resRes = await apiGetReservations({ pageSize: 10000, classroom_id: row.id, status: 'approved' });
 
-    if (schedRes.code === 200) activeRoomSchedules.value = schedRes.data;
-    if (resRes.code === 200) activeRoomReservations.value = resRes.data;
+    if (schedRes.code === 200) activeRoomSchedules.value = schedRes.data.records;
+    if (resRes.code === 200) activeRoomReservations.value = resRes.data.records;
 
     timetableVisible.value = true;
   } catch (error) {
