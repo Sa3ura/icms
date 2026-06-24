@@ -33,7 +33,7 @@
 | 21 | 功能 | 通知系统 `is_read` 全用户共享 / 无发送通知功能 | ✅ 已重构为 `read_by[]` 模式 + 通知管理页 |
 | 22 | 功能 | 通知列表无轮询 / 已读状态不持久化 | ✅ 已修复 |
 
-### 1.2 后端对接修复 (9/9)
+### 1.2 后端对接修复 (10/10)
 
 | # | 类别 | 问题 | 状态 |
 |---|------|------|------|
@@ -44,14 +44,15 @@
 | 27 | 不兼容 | 后端返回 camelCase → 前端期望 snake_case | ✅ 新建 `BeanUtils.toMap()` + 7 个 Controller 统一蛇形输出 |
 | 28 | 安全 | `SysUser` 实体裸返含 `password` 字段 | ✅ `userToMap()` 去敏处理 |
 | 29 | 不兼容 | 工单/预约列表缺 JOIN 名称字段 | ✅ `WorkOrderController` / `ReservationController` 注入名称 |
-| 30 | 基础设施 | 手动 SQL 建表无版本控制 | ✅ Flyway 接管：`V1__init_schema.sql` + `flyway_schema_history` |
-| 31 | 安全 | Spring Security 样板代码 281 行，无角色注解 | ✅ SaToken 重构：4 文件删除→2 文件新增，10 个 Controller 一行注解鉴权 |
+| 30 | 基础设施 | 手动 SQL 建表无版本控制 | ✅ Flyway 接管：`V1__xxx.sql` + `flyway_schema_history` |
+| 31 | 安全 | Spring Security 样板代码 281 行，无角色注解 | ✅ SaToken 替换：`@SaCheckRole` 一行注解鉴权 |
+| 32 | 安全 | JWT 明文存 localStorage (XSS 可窃取) | ✅ 双 Token：Access 内存 + Refresh httpOnly Cookie + 轮转 |
 
 ---
 
-## 二、致命缺陷 — 生产不可用 (4 项)
+## 二、致命缺陷 — 生产不可用 (剩余 2 项，已修复 2 项)
 
-> **定义**：不修复则无法安全部署到公网环境。
+> **定义**：不修复则无法安全部署到公网环境。⚠️ 2.1 权限校验 + 2.2 Token 安全已修复。
 
 ### 2.1 权限纯前端校验 ✅ 已修复 (SaToken)
 
@@ -61,14 +62,13 @@
 | 原状 | 所有 `canEdit` / `canAssign` 仅通过 `userStore.role` 判断；修改 localStorage 即可提权 |
 | 修复 | 10 个 Controller 已加 `@SaCheckRole({"admin", "jw"})` / `@SaCheckLogin` 后端硬校验；前端 computed 仅用于 UI 显隐 |
 
-### 2.2 Token 明文存 localStorage
+### 2.2 Token 明文存 localStorage ✅ 已修复 (双 Token)
 
 | 字段 | 值 |
 |------|-----|
-| 严重度 | 🔴 致命 |
-| 现状 | JWT token 存于 `localStorage.getItem('icms_token')`，axios 拦截器每次请求附加 `Bearer` 头 |
-| 攻击面 | XSS 脚本一行 `localStorage.getItem('icms_token')` 即可窃取所有会话 |
-| 修复方案 | 改为 httpOnly Cookie (BFF 模式) 或使用 Authorization Code + PKCE 流程 |
+| 严重度 | 🟢 已修复 |
+| 原状 | JWT token 存于 `localStorage.getItem('icms_token')`，XSS 一行代码即可窃取 |
+| 修复 | Access token (30min) 存 JS 内存变量，不落盘；Refresh token (7天) 存 httpOnly Cookie，JS 不可读；每次 refresh 自动轮转旧 token 立即 DB 失效 |
 
 ### 2.3 验证码纯前端生成与校验
 
@@ -235,10 +235,10 @@
 
 ## 七、修复优先级建议
 
-### S1 — 上线前必须修（预计 2-3 天）
+### S1 — 上线前必须修（预计 2 天）
 
 ```
-1. 登录安全：验证码走后端 + 错误限流 + Token httpOnly
+1. 登录安全：验证码走后端 + 错误限流
 2. 表格分页 + 搜索防抖
 3. Dashboard 数据从后端取
 ```
@@ -273,13 +273,13 @@
 
 ---
 
-## 八、已修复项汇总 (31/31)
+## 八、已修复项汇总 (33/33)
 
 | 范围 | 已修复 | 状态 |
 |------|--------|------|
 | 前端缺陷 | 22 项 | ✅ 构建 + Lint 通过 |
 | 后端对接缺口 | 9 项 | ✅ Java 编译通过 |
-| 基础架构 | 2 项 | ✅ Flyway + SaToken |
-| Spring Security 替换 | 281 行样板代码 → 2 文件 64 行 | ✅ SaToken JWT 无状态模式 |
+| 安全加固 | 2 项 | ✅ SaToken + 双 Token |
+| 基础架构 | 2 项 | ✅ Flyway + 交付分析 |
 
 > 全系统 **0 编译/构建错误**。前端 `npm run dev` 演示。后端需要 MySQL 后 `mvnw.cmd spring-boot:run` 启动。Flyway 管理 DDL，SaToken 管理认证与鉴权 (`@SaCheckRole`)。
