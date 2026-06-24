@@ -66,13 +66,13 @@
                 size="small"
                 @change="updateCharts"
               >
-                <el-radio-button label="all">
+                <el-radio-button value="all">
                   全校
                 </el-radio-button>
-                <el-radio-button label="1">
+                <el-radio-button value="1">
                   东区
                 </el-radio-button>
-                <el-radio-button label="2">
+                <el-radio-button value="2">
                   西区
                 </el-radio-button>
               </el-radio-group>

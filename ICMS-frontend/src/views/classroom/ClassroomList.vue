@@ -342,13 +342,13 @@
           prop="room_type"
         >
           <el-radio-group v-model="form.room_type">
-            <el-radio-button label="normal">
+            <el-radio-button value="normal">
               普通
             </el-radio-button>
-            <el-radio-button label="multimedia">
+            <el-radio-button value="multimedia">
               多媒体
             </el-radio-button>
-            <el-radio-button label="lab">
+            <el-radio-button value="lab">
               实验室
             </el-radio-button>
           </el-radio-group>

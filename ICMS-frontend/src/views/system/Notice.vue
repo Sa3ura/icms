@@ -160,13 +160,13 @@
           prop="notice_type"
         >
           <el-radio-group v-model="form.notice_type">
-            <el-radio-button label="info">
+            <el-radio-button value="info">
               通知
             </el-radio-button>
-            <el-radio-button label="warning">
+            <el-radio-button value="warning">
               警告
             </el-radio-button>
-            <el-radio-button label="system">
+            <el-radio-button value="system">
               系统
             </el-radio-button>
           </el-radio-group>

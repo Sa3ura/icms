@@ -447,13 +447,13 @@
           prop="fault_level"
         >
           <el-radio-group v-model="faultForm.fault_level">
-            <el-radio-button label="normal">
+            <el-radio-button value="normal">
               普通故障
             </el-radio-button>
-            <el-radio-button label="urgent">
+            <el-radio-button value="urgent">
               紧急故障
             </el-radio-button>
-            <el-radio-button label="severe">
+            <el-radio-button value="severe">
               严重故障
             </el-radio-button>
           </el-radio-group>

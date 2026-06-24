@@ -324,13 +324,13 @@
           prop="fault_level"
         >
           <el-radio-group v-model="createForm.fault_level">
-            <el-radio-button label="normal">
+            <el-radio-button value="normal">
               普通
             </el-radio-button>
-            <el-radio-button label="urgent">
+            <el-radio-button value="urgent">
               紧急
             </el-radio-button>
-            <el-radio-button label="severe">
+            <el-radio-button value="severe">
               严重
             </el-radio-button>
           </el-radio-group>
@@ -435,10 +435,10 @@
           prop="status"
         >
           <el-radio-group v-model="handleForm.status">
-            <el-radio-button label="processing">
+            <el-radio-button value="processing">
               维修中
             </el-radio-button>
-            <el-radio-button label="finished">
+            <el-radio-button value="finished">
               修复完成
             </el-radio-button>
           </el-radio-group>
