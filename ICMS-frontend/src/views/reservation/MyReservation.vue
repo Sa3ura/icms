@@ -462,6 +462,7 @@ const handleSizeChange = (size) => {
 // 节次时间显示
 import { getSectionTime, getReservationStatusLabel, getReservationStatusTag } from '../../utils/mappings';
 import { useExport } from '../../composables/useExport';
+import { useHmrData } from '../../composables/useHmrData';
 
 const resetFilters = () => {
   filters.value = { status: '', date_range: [] };
@@ -487,6 +488,8 @@ const loadData = async () => {
     loading.value = false;
   }
 };
+
+useHmrData(loadData);
 
 const handleCreate = () => {
   form.value = {

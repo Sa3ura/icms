@@ -319,6 +319,7 @@ const debouncedKeyword = () => {
 import { getSectionTime, getReservationStatusLabel, getReservationStatusTag } from '../../utils/mappings';
 import { useFilterSync } from '../../composables/useFilterSync';
 import { useExport } from '../../composables/useExport';
+import { useHmrData } from '../../composables/useHmrData';
 
 const resetFilters = () => {
   filters.value = { status: 'pending', keyword: '' };
@@ -357,6 +358,8 @@ const loadData = async () => {
     loading.value = false;
   }
 };
+
+useHmrData(loadData);
 
 const openApprovalDialog = (row, type) => {
   activeRow.value = row;

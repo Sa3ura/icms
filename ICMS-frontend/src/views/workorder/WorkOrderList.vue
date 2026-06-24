@@ -675,6 +675,7 @@ import { getFaultLevelLabel, getFaultLevelTag, getWorkOrderStatusLabel, getWorkO
 import { UserFilled, Tools, CircleCloseFilled, MoreFilled } from '@element-plus/icons-vue';
 import { useFilterSync } from '../../composables/useFilterSync';
 import { useExport } from '../../composables/useExport';
+import { useHmrData } from '../../composables/useHmrData';
 
 const resetFilters = () => {
   filters.value = { status: '', fault_level: '', classroom_id: '' };
@@ -705,6 +706,8 @@ const loadData = async () => {
     loading.value = false;
   }
 };
+
+useHmrData(loadData);
 
 const handlePageChange = (page) => {
   currentPage.value = page;

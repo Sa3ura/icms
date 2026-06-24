@@ -335,6 +335,7 @@ import { ref, onMounted } from 'vue';
 import { useUserStore } from '../../store/user';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { apiGetNotices, apiSaveNotice, apiDeleteNotice, request } from '../../api';
+import { useHmrData } from '../../composables/useHmrData';
 import { getRoleLabel } from '../../utils/mappings';
 import { Edit, Delete, InfoFilled, User } from '@element-plus/icons-vue';
 
@@ -395,6 +396,8 @@ const loadData = async () => {
     loading.value = false;
   }
 };
+
+useHmrData(loadData);
 
 const handlePageChange = (page) => {
   currentPage.value = page;

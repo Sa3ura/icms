@@ -209,6 +209,7 @@ useFilterSync(filters);
 import { getMethodTag } from '../../utils/mappings';
 import { useFilterSync } from '../../composables/useFilterSync';
 import { useExport } from '../../composables/useExport';
+import { useHmrData } from '../../composables/useHmrData';
 
 let searchTimer = null;
 const debouncedSearch = () => {
@@ -218,6 +219,8 @@ const debouncedSearch = () => {
     loadData();
   }, 300);
 };
+
+useHmrData(loadData);
 
 const handlePageChange = (page) => {
   currentPage.value = page;

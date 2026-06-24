@@ -439,6 +439,8 @@ const debouncedKeyword = () => {
   }, 300);
 };
 
+useHmrData(loadData);
+
 const handlePageChange = (page) => {
   currentPage.value = page;
   loadData();
