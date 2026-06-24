@@ -106,15 +106,17 @@ VITE_API_BASE_URL=http://localhost:8080
 ```bash
 cd ICMS-backend
 
-# 1. 导入数据库
-# 执行 ICMS_database_schema_简体.sql
+# 1. 创建数据库（仅需一次）
+# mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS icms DEFAULT CHARACTER SET utf8mb4;"
 
 # 2. 修改 application.yml 中的数据库连接信息
 
-# 3. 启动
+# 3. 启动（Flyway 自动建表 + DatabaseInitializer 播种数据）
 ./mvnw spring-boot:run   # Linux/Mac
 mvnw.cmd spring-boot:run # Windows
 ```
+
+启动时 Flyway 自动执行 `db/migration/` 下的版本化 SQL 脚本，无需手动导入建表文件。
 
 ## 默认账户
 

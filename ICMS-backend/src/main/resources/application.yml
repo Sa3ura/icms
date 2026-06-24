@@ -10,9 +10,12 @@ spring:
     username: root
     password: ***REMOVED***
 
-  sql:
-    init:
-      mode: never # 手动运行建表脚本，不自动运行
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    encoding: UTF-8
+    clean-disabled: true
+    baseline-on-migrate: true
 
 mybatis-plus:
   configuration:
