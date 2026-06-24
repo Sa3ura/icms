@@ -15,6 +15,7 @@ public class SysUser {
     private Long id;
     private String username;
     private String password;
+    private String refreshToken;
     private String realName;
     private String email;
     private String phone;

@@ -38,4 +38,32 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 const userStore = useUserStore();
 userStore.initTheme();
 
+let refreshAttempted = false;
+
+router.beforeEach(async (to, from, next) => {
+  const userStore = useUserStore();
+
+  if (!refreshAttempted && !userStore.isLoggedIn) {
+    refreshAttempted = true;
+    const success = await userStore.tryRefresh();
+    if (success && to.path === '/login') {
+      next('/');
+      return;
+    }
+  }
+
+  const isLoggedIn = userStore.isLoggedIn;
+  const userRole = userStore.role;
+
+  if (to.matched.some(record => record.meta.requiresAuth !== false) && !isLoggedIn) {
+    next('/login');
+  } else if (to.path === '/login' && isLoggedIn) {
+    next('/');
+  } else if (to.meta.roles && !to.meta.roles.includes(userRole)) {
+    next('/dashboard');
+  } else {
+    next();
+  }
+});
+
 app.mount('#app');

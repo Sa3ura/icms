@@ -9,11 +9,16 @@ import com.icms.service.SysUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
+import java.util.Base64;
+
 @Service
 public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> implements SysUserService {
 
     @Autowired
     private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
+    private static final SecureRandom secureRandom = new SecureRandom();
 
     @Override
     public SysUser validateLogin(String username, String password) {
@@ -33,5 +38,34 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         }
 
         return user;
+    }
+
+    @Override
+    public String rotateRefreshToken(Long userId) {
+        byte[] bytes = new byte[32];
+        secureRandom.nextBytes(bytes);
+        String token = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+
+        SysUser user = this.getById(userId);
+        if (user != null) {
+            user.setRefreshToken(token);
+            this.updateById(user);
+        }
+        return token;
+    }
+
+    @Override
+    public void clearRefreshToken(Long userId) {
+        SysUser user = this.getById(userId);
+        if (user != null) {
+            user.setRefreshToken(null);
+            this.updateById(user);
+        }
+    }
+
+    @Override
+    public SysUser findByRefreshToken(String refreshToken) {
+        return this.getOne(new LambdaQueryWrapper<SysUser>()
+                .eq(SysUser::getRefreshToken, refreshToken));
     }
 }

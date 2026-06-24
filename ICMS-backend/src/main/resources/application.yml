@@ -30,12 +30,21 @@ mybatis-plus:
 
 sa-token:
   token-name: Authorization
-  token-prefix: Bearer
-  timeout: 86400
+  timeout: 1800
   active-timeout: -1
   is-concurrent: true
   is-share: false
-  token-style: simple-uuid
+  is-read-header: true
+  is-read-cookie: false
+  token-prefix: ""
   is-log: false
   is-print: false
   jwt-secret-key: ***REMOVED_JWT_SECRET***
+
+icms:
+  refresh-token:
+    cookie-name: icms_rf
+    max-age: 604800
+    path: /api
+    http-only: true
+    same-site: Strict

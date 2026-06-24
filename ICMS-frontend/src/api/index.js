@@ -3,41 +3,83 @@ import * as db from '../db/mockDb';
 import axios from 'axios';
 
 // ==================== 模式开关 ====================
-// 将此值设为 false 可以直接连接本地运行的 Spring Boot 后端 (http://localhost:8080)
-// 将此值设为 true 运行在纯前端 LocalStorage Mock 数据库演示模式下
 const USE_MOCK = import.meta.env.VITE_USE_MOCK !== 'false';
+
+// ==================== 内存 Token 管理 (防 XSS) ====================
+let accessToken = null;
+let refreshPromise = null;
+
+export const setToken = (token) => { accessToken = token; };
+export const hasToken = () => !!accessToken;
+
+const clearAuth = () => {
+  accessToken = null;
+  localStorage.removeItem('icms_token');
+  localStorage.removeItem('icms_user_info');
+};
 
 // ==================== Axios 真实请求实例配置 ====================
 const request = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080', // Spring Boot 后端地址
-  timeout: 5000
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
+  timeout: 5000,
+  withCredentials: true
 });
 
-// 请求拦截器：自动注入 JWT Token
 request.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('icms_token');
-    if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
+    if (accessToken) {
+      config.headers['Authorization'] = accessToken;
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// 响应拦截器：统一格式处理
 request.interceptors.response.use(
-  (response) => {
-    return response.data;
-  },
-  (error) => {
+  (response) => response.data,
+  async (error) => {
+    const originalRequest = error.config;
+    const status = error.response?.status;
+
+    if (status === 401 && !originalRequest._retry && accessToken) {
+      originalRequest._retry = true;
+
+      if (!refreshPromise) {
+        refreshPromise = request.post('/api/auth/refresh')
+          .then(res => {
+            if (res.code === 200 && res.data.token) {
+              accessToken = res.data.token;
+              localStorage.setItem('icms_user_info', JSON.stringify(res.data.userInfo));
+              return res.data.token;
+            }
+            throw new Error('refresh_failed');
+          })
+          .catch(() => {
+            clearAuth();
+            window.location.hash = '#/login';
+            throw new Error('refresh_failed');
+          })
+          .finally(() => {
+            refreshPromise = null;
+          });
+      }
+
+      try {
+        const newToken = await refreshPromise;
+        originalRequest.headers['Authorization'] = newToken;
+        return request(originalRequest);
+      } catch {
+        return Promise.reject(new Error('认证已过期，请重新登录'));
+      }
+    }
+
     console.error('API Request Error:', error);
     const msg = error.response?.data?.message || '服务器连接异常，请检查后端服务是否启动';
     return Promise.reject(new Error(msg));
   }
 );
+
+export { request };
 
 // 模拟延迟辅助函数
 const mockRequest = async (action, dataCallback) => {

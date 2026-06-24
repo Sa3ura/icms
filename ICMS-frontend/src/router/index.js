@@ -1,5 +1,4 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
-import { useUserStore } from '../store/user';
 
 const routes = [
   {
@@ -90,34 +89,6 @@ const routes = [
 const router = createRouter({
   history: createWebHashHistory(),
   routes
-});
-
-// 路由守卫
-router.beforeEach((to, from, next) => {
-  const userStore = useUserStore();
-  const isLoggedIn = userStore.isLoggedIn;
-  const userRole = userStore.role;
-
-  // 1. 登录校验
-  if (to.matched.some(record => record.meta.requiresAuth !== false) && !isLoggedIn) {
-    next('/login');
-  } 
-  // 2. 已登录防重返登录页
-  else if (to.path === '/login' && isLoggedIn) {
-    next('/');
-  } 
-  // 3. 角色权限校验
-  else if (to.meta.roles && !to.meta.roles.includes(userRole)) {
-    // 权限不足重定向到首页，但如果是进入首页/dashboard时权限不足（比如缓存损坏导致 role 丢失），则退回登录页以防止无限循环卡死
-    if (to.path === '/dashboard' || to.path === '/') {
-      userStore.logout();
-      next('/login');
-    } else {
-      next('/dashboard');
-    }
-  } else {
-    next();
-  }
 });
 
 export default router;

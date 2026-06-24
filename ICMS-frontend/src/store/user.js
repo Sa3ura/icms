@@ -1,9 +1,11 @@
 import { defineStore } from 'pinia';
-import { apiLogin } from '../api';
+import { apiLogin, setToken, request } from '../api';
+
+const USE_MOCK = import.meta.env.VITE_USE_MOCK !== 'false';
 
 export const useUserStore = defineStore('user', {
   state: () => ({
-    token: localStorage.getItem('icms_token') || '',
+    token: USE_MOCK ? localStorage.getItem('icms_token') : null,
     userInfo: JSON.parse(localStorage.getItem('icms_user_info') || 'null'),
     theme: localStorage.getItem('icms_theme') || 'light'
   }),
@@ -18,17 +20,45 @@ export const useUserStore = defineStore('user', {
       if (res.code === 200) {
         this.token = res.data.token;
         this.userInfo = res.data.userInfo;
-        localStorage.setItem('icms_token', this.token);
+        setToken(res.data.token);
         localStorage.setItem('icms_user_info', JSON.stringify(this.userInfo));
+        if (USE_MOCK) {
+          localStorage.setItem('icms_token', this.token);
+        }
         return res;
       }
       throw new Error(res.message);
     },
-    logout() {
-      this.token = '';
+    async logout() {
+      if (!USE_MOCK) {
+        try { await request.post('/api/auth/logout'); } catch { /* ignore */ }
+      }
+      this.token = null;
       this.userInfo = null;
+      setToken(null);
       localStorage.removeItem('icms_token');
       localStorage.removeItem('icms_user_info');
+    },
+    async tryRefresh() {
+      if (USE_MOCK) {
+        const saved = localStorage.getItem('icms_token');
+        if (saved) {
+          this.token = saved;
+          setToken(saved);
+          return true;
+        }
+        return false;
+      }
+      try {
+        const res = await request.post('/api/auth/refresh');
+        if (res.code === 200 && res.data.token) {
+          this.token = res.data.token;
+          this.userInfo = res.data.userInfo;
+          localStorage.setItem('icms_user_info', JSON.stringify(this.userInfo));
+          return true;
+        }
+      } catch { /* refresh failed */ }
+      return false;
     },
     toggleTheme() {
       this.theme = this.theme === 'light' ? 'dark' : 'light';
