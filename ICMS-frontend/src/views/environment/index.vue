@@ -323,7 +323,7 @@ const drawCharts = () => {
         borderColor: borderColor
       },
       legend: { textStyle: { color: textColor } },
-      grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+      grid: { left: '3%', right: '4%', bottom: '3%', outerBounds: false },
       xAxis: {
         type: 'category',
         data: timeData,
@@ -377,7 +377,7 @@ const drawCharts = () => {
         borderColor: borderColor
       },
       legend: { textStyle: { color: textColor } },
-      grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+      grid: { left: '3%', right: '4%', bottom: '3%', outerBounds: false },
       xAxis: {
         type: 'category',
         data: timeData,

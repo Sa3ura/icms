@@ -350,7 +350,7 @@ const updateCharts = async () => {
         textStyle: { color: isDark ? '#f9fafb' : '#111827' },
         formatter: '{b} <br/>使用率 : {c}%'
       },
-      grid: { left: '2%', right: '2%', bottom: '0%', top: '15%', containLabel: true },
+      grid: { left: '2%', right: '2%', bottom: '0%', top: '15%', outerBounds: false },
       xAxis: {
         type: 'category',
         boundaryGap: false,
