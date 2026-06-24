@@ -28,7 +28,7 @@ public class SaTokenConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(new SaInterceptor())
                 .addPathPatterns("/api/**")
-                .excludePathPatterns("/api/auth/login", "/api/auth/refresh", "/api/auth/captcha");
+                .excludePathPatterns("/api/auth/login", "/api/auth/refresh", "/api/auth/captcha", "/api/auth/logout");
     }
 
     @Override
