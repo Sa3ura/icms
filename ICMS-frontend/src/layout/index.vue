@@ -557,12 +557,12 @@ onUnmounted(() => {
 }
 
 .logo-area {
-  height: 64px;
+  height: 72px;
   display: flex;
   align-items: center;
   padding: 0 24px;
   gap: 12px;
-  border-bottom: 1px solid var(--border-light);
+  margin-bottom: 8px;
   transition: padding 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -603,11 +603,11 @@ onUnmounted(() => {
 
 .sidebar-el-menu {
   flex-grow: 1;
-  padding: 8px 12px 0;
+  padding: 0 12px;
   border-right: none;
 }
 .sidebar-el-menu.el-menu--collapse {
-  padding: 8px 0 0;
+  padding: 0;
   width: 80px;
 }
 
