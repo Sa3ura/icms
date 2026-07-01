@@ -575,7 +575,7 @@ onUnmounted(() => {
 .logo-icon {
   width: 32px;
   height: 32px;
-  background-color: var(--accent-color);
+  background-color: var(--primary-color);
   border-radius: 8px;
   display: flex;
   justify-content: center;
