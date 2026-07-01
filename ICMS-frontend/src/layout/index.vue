@@ -10,7 +10,7 @@
         :class="{ 'is-collapsed': isCollapsed }"
       >
         <el-icon
-          size="20"
+          size="26"
           color="var(--text-main)"
         >
           <School />
@@ -561,6 +561,7 @@ onUnmounted(() => {
   margin: 4px 12px;
   padding: 0 32px;
   border-radius: var(--radius-md);
+  border-bottom: 1px solid var(--border-light);
   transition: margin 0.28s cubic-bezier(0.4, 0, 0.2, 1), padding 0.28s cubic-bezier(0.4, 0, 0.2, 1), width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -573,9 +574,10 @@ onUnmounted(() => {
 
 .logo-title {
   color: var(--text-main);
-  font-weight: 700;
-  font-size: 14px;
-  margin-left: 8px;
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: -0.5px;
+  margin-left: 10px;
   white-space: nowrap;
   overflow: hidden;
   transition: opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1), max-width 0.28s cubic-bezier(0.4, 0, 0.2, 1), margin-left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
