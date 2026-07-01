@@ -1,0 +1,12 @@
+# 复制此文件为 application-local.yml 并填入真实密钥（application-local.yml 不会被提交）。
+# 或在生产环境用同名环境变量注入：DB_URL / DB_USERNAME / DB_PASSWORD / JWT_SECRET_KEY。
+
+spring:
+  datasource:
+    url: jdbc:mysql://<db-host>:3306/icms?useSSL=false&characterEncoding=utf8&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: <your-db-username>
+    password: <your-db-password>
+
+sa-token:
+  # 请生成一个足够长的随机字符串，切勿使用示例值
+  jwt-secret-key: <your-jwt-secret-key>

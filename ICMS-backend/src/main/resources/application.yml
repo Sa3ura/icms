@@ -4,11 +4,15 @@ server:
     context-path: /
 
 spring:
+  # 本地开发时从 application-local.yml 读取真实密钥（该文件已 gitignore，不会提交）；
+  # 生产环境改用同名环境变量注入。optional: 表示文件不存在也不报错。
+  config:
+    import: optional:file:./application-local.yml
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://192.168.208.128:3306/icms?useSSL=false&characterEncoding=utf8&serverTimezone=UTC&allowPublicKeyRetrieval=true
-    username: root
-    password: ***REMOVED***
+    url: ${DB_URL:jdbc:mysql://localhost:3306/icms?useSSL=false&characterEncoding=utf8&serverTimezone=UTC&allowPublicKeyRetrieval=true}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
 
   flyway:
     enabled: true
@@ -39,7 +43,7 @@ sa-token:
   token-prefix: ""
   is-log: true
   is-print: false
-  jwt-secret-key: ***REMOVED_JWT_SECRET***
+  jwt-secret-key: ${JWT_SECRET_KEY:}
 
 icms:
   refresh-token:

@@ -29,6 +29,10 @@ Thumbs.db
 .env.local
 .env.*.local
 
+# Local secrets (keep .example templates, ignore real values)
+application-local.yml
+**/application-local.yml
+
 # Logs
 *.log
 
