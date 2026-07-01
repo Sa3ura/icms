@@ -206,17 +206,17 @@
 
 ---
 
-## 五、低风险 — UX 打磨 (5 项，1 项已完成 + 1 项不适用)
+## 五、低风险 — UX 打磨 (5 项，全部已修复 ✅)
 
 > **定义**：不阻断业务，但影响用户满意度和专业感。
 
 | # | 问题 | 现状 | 状态 |
 |---|------|------|------|
 | 1 | 无骨架屏 | 8 个表格页面已用 `el-skeleton` 替换 `v-loading` 转圈 | ✅ 已修复 (71e49bb) |
-| 2 | 表格无列排序 | 点击表头无反应，所有表列无 `sortable` 属性 | ❌ 未修复 |
+| 2 | 表格无列排序 | 7 个表格页面已加 `sortable="custom"`，新建 `useTableSort` composable 本地排序 | ✅ 已修复 (6dccc1b) |
 | 3 | 表格 `fixed="right"` 无阴影 | `remove_fixed.py` 已删除所有固定列，问题不再适用 | — 不适用 |
-| 4 | 无"回到顶部"按钮 | 长表格需手动滚动回顶 | ❌ 未修复 |
-| 5 | 滚动条 hover 色在暗黑模式下不明显 | 当前用 `primary-color` (暗黑=白色)，hover 效果弱 | ❌ 未修复 |
+| 4 | 无"回到顶部"按钮 | `layout/index.vue` 加全局 `<el-backtop target=".content-main" />` | ✅ 已修复 (6dccc1b) |
+| 5 | 滚动条 hover 色在暗黑模式下不明显 | 暗黑模式 `::-webkit-scrollbar-thumb:hover` 改用 `--accent-color` (indigo) | ✅ 已修复 (6dccc1b) |
 
 ---
 
@@ -249,12 +249,12 @@
 ✅ 通知已读用户明细
 ```
 
-### S3 — 第二周迭代（预计 0.5 天）
+### S3 — 第二周迭代（✅ 全部完成）
 
 ```
-❌ 表格排序（8 个表格页面加 sortable="custom"）
-❌ 回到顶部（8 个页面加 <el-backtop />）
-❌ 滚动条暗黑 hover 色优化
+✅ 表格排序（新建 useTableSort composable，7 个页面 key 列 sortable="custom"）
+✅ 回到顶部（layout/index.vue 全局 <el-backtop>）
+✅ 滚动条暗黑 hover 色优化（style.css 暗黑 thumb hover 改 accent-color）
 ```
 
 ### S4 — 长期基建（持续）
@@ -277,6 +277,7 @@
 | 安全加固 | 5 项 | ✅ SaToken + 双Token + 验证码 + 限流 + OR 模式 |
 | 基础架构 | 3 项 | ✅ Flyway 版本迁移 + 交付文档 + Knife4j API 文档 (本次) |
 | 交互体验 | 3 项 | ✅ 搜索防抖 + 分页 + 骨架屏加载 (本次确认) |
+| UX 打磨 (S3，本次) | 3 项 | ✅ 表格列排序 + 回到顶部 + 滚动条暗黑 hover 色 |
 | 兼容修复 | 5 项 | ✅ logout / login refresh / el-link / pagination compat / router guard |
 | 中风险功能 (S2) | 7 项 | ✅ 批量操作 / 筛选持久化 / 导出 / 通知 / 校验 / 课表 / 已读明细 |
 | 敏感数据防泄露 (本次) | 2 项 | ✅ SysUser password/refreshToken @JsonIgnore + BeanUtils.toMap 补丁 |
@@ -284,6 +285,6 @@
 
 > 致命缺陷 (4/4) 全部清零。Dashboard 真实数据已接入 (`/api/stats/weekly-usage`)。
 
-> S1 零项、S2 七项全部完成。S3 剩表格排序 + 回顶按钮 + 滚动条暗黑色 (3 项低风险 UX)。
+> S1 零项、S2 七项、S3 三项全部完成。剩余 S4 长期基建 (测试/CI/CD/监控)。
 
 > 全系统 **0 编译/构建错误**。Knife4j 文档已覆盖 11 模块/40 接口 (`http://localhost:8080/doc.html`)。前端 `npm run dev` 演示。后端需 MySQL 后 `mvnw.cmd spring-boot:run` 启动。Flyway 管理 DDL，SaToken 管理认证与鉴权。
