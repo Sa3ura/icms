@@ -1,6 +1,6 @@
 # ICMS 交付差距分析报告
 
-> 报告日期：2026-06-24 | 更新：2026-07-01 | 分析范围：ICMS 智慧教室管理系统全栈
+> 报告日期：2026-06-24 | 更新：2026-06-24 | 分析范围：ICMS 智慧教室管理系统全栈
 
 ---
 
@@ -206,17 +206,17 @@
 
 ---
 
-## 五、低风险 — UX 打磨 (5 项，2 项已完成 + 1 项不适用)
+## 五、低风险 — UX 打磨 (5 项)
 
 > **定义**：不阻断业务，但影响用户满意度和专业感。
 
-| # | 问题 | 现状 | 状态 |
+| # | 问题 | 现状 | 方案 |
 |---|------|------|------|
-| 1 | 无骨架屏 | 8 个表格页面已用 `el-skeleton` 替换 `v-loading` 转圈 | ✅ 已修复 (71e49bb) |
-| 2 | 表格无列排序 | 点击表头无反应，所有表列无 `sortable` 属性 | ❌ 未修复 |
-| 3 | 表格 `fixed="right"` 无阴影 | `remove_fixed.py` 已删除所有固定列，问题不再适用 | — 不适用 |
-| 4 | 无"回到顶部"按钮 | 长表格需手动滚动回顶 | ❌ 未修复 |
-| 5 | 滚动条 hover 色在暗黑模式下不明显 | 当前用 `primary-color` (暗黑=白色)，hover 效果弱 | ❌ 未修复 |
+| 1 | 无骨架屏 | Loading 只有 `v-loading` 转圈 | 用 Element Plus `el-skeleton` 替换首屏 loading |
+| 2 | 表格无列排序 | 点击表头无反应 | `el-table-column` 加 `sortable="custom"` |
+| 3 | 表格 `fixed="right"` 无阴影 | 右侧固定列没有视觉分隔 | 加 `.el-table__fixed-right { box-shadow: -4px 0 8px rgba(0,0,0,0.08); }` |
+| 4 | 无"回到顶部"按钮 | 长表格需手动滚动回顶 | 用 `el-backtop` 组件（Element Plus 内置） |
+| 5 | 滚动条 hover 色在暗黑模式下不明显 | 当前用 `primary-color` (暗黑=白色)，hover 效果弱 | 暗黑模式下 thumb hover 用 accent-color |
 
 ---
 
@@ -249,12 +249,13 @@
 ✅ 通知已读用户明细
 ```
 
-### S3 — 第二周迭代（预计 0.5 天）
+### S3 — 第二周迭代（预计 1 天）
 
 ```
-❌ 表格排序（8 个表格页面加 sortable="custom"）
-❌ 回到顶部（8 个页面加 <el-backtop />）
-❌ 滚动条暗黑 hover 色优化
+10. 通知面板筛选 + 链接修复
+11. 表格排序 + fixed 列阴影
+12. 回到顶部
+13. 课表交互优化
 ```
 
 ### S4 — 长期基建（持续）
@@ -268,23 +269,19 @@
 
 ---
 
-## 八、已修复项汇总 (47 + 本次会话增量)
+## 八、已修复项汇总 (47/47)
 
 | 范围 | 已修复 | 状态 |
 |------|--------|------|
 | 前端缺陷 | 25 项 | ✅ 构建 + Lint 零错误 |
 | 后端对接缺口 | 14 项 | ✅ Java 编译零错误 |
 | 安全加固 | 5 项 | ✅ SaToken + 双Token + 验证码 + 限流 + OR 模式 |
-| 基础架构 | 3 项 | ✅ Flyway 版本迁移 + 交付文档 + Knife4j API 文档 (本次) |
-| 交互体验 | 3 项 | ✅ 搜索防抖 + 分页 + 骨架屏加载 (本次确认) |
+| 基础架构 | 2 项 | ✅ Flyway 版本迁移 + 交付文档 |
+| 交互体验 | 2 项 | ✅ 搜索防抖 + 分页 |
 | 兼容修复 | 5 项 | ✅ logout / login refresh / el-link / pagination compat / router guard |
 | 中风险功能 (S2) | 7 项 | ✅ 批量操作 / 筛选持久化 / 导出 / 通知 / 校验 / 课表 / 已读明细 |
-| 敏感数据防泄露 (本次) | 2 项 | ✅ SysUser password/refreshToken @JsonIgnore + BeanUtils.toMap 补丁 |
-| 前端审查修复 (本次) | 3 项 | ✅ WorkOrderList InfoFilled 图标 / main.js 死分支 / axios timeout 10s |
-| import 顺序整理 (本次) | 2 文件 | ✅ WorkOrderList.vue + dashboard/index.vue import 上移 |
 
-> 致命缺陷 (4/4) 全部清零。Dashboard 真实数据已接入 (`/api/stats/weekly-usage`)。
+> 致命缺陷 (4/4) 全部清零。生产环境安全性达标。S1 仅剩「Dashboard 真实数据」。
+> 新增 Log4j2 日志体系，SQL 单独文件，SaToken 可见，后台运行安静可控。
 
-> S1 零项、S2 七项全部完成。S3 剩表格排序 + 回顶按钮 + 滚动条暗黑色 (3 项低风险 UX)。
-
-> 全系统 **0 编译/构建错误**。Knife4j 文档已覆盖 11 模块/40 接口 (`http://localhost:8080/doc.html`)。前端 `npm run dev` 演示。后端需 MySQL 后 `mvnw.cmd spring-boot:run` 启动。Flyway 管理 DDL，SaToken 管理认证与鉴权。
+> 全系统 **0 编译/构建错误**。前端 `npm run dev` 演示。后端需要 MySQL 后 `mvnw.cmd spring-boot:run` 启动。Flyway 管理 DDL，SaToken 管理认证与鉴权 (`@SaCheckRole` + `SaMode.OR`)。

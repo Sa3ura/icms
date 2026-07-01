@@ -18,7 +18,6 @@ Intelligent Classroom Management System — 基于 Vue 3 + Spring Boot 的全栈
 | ORM | MyBatis-Plus | 3.5.5 |
 | 认证 | SaToken (JWT 无状态) | 1.38.0 |
 | 安全 | BCrypt + SVG 验证码 + IP 限流 + SaMode.OR | — |
-| 文档 | Knife4j + OpenAPI 3 (Swagger) | 4.5.0 |
 | 日志 | Log4j2 (彩色控制台 + SQL/App 分离滚动文件) | — |
 | 数据库 | MySQL + Flyway 版本迁移 | 8.x |
 | 构建 | Maven Wrapper | 3.9.6 |
@@ -124,8 +123,6 @@ mvnw.cmd spring-boot:run # Windows
 
 启动时 Flyway 自动执行 `db/migration/` 下的版本化 SQL 脚本，无需手动导入建表文件。
 
-启动后访问 `http://localhost:8080/doc.html` 可查看 Knife4j API 文档（各接口带中文 `@Tag` / `@Operation` 模块与摘要）。
-
 ## 默认账户
 
 所有种子用户密码统一为 `123456`：
@@ -168,10 +165,9 @@ npm run format     # ESLint 自动修复
 - **CORS 白名单**：`app.cors.allowed-origins` 配置化来源白名单，替代通配符，配合 `allowCredentials` 收紧跨域
 - **登录安全**：后端 SVG 干扰验证码 + 同 IP 5次/5分钟失败封锁 15 分钟（毫秒时间戳全程 `long` 计算，规避 int 溢出）
 - **密钥外置**：JWT 密钥与数据库口令移出源码，置于 gitignore 的 `application-local.yml`
-- **API 文档**：Knife4j + OpenAPI 3，11 个 Controller/40 个接口全覆盖中文 `@Tag` 模块与 `@Operation` 摘要，`http://localhost:8080/doc.html`
 - **暗黑模式**：CSS 自定义属性 + 平滑主题过渡动画 (`theme-transitioning`)
 - **通知系统**：发布→推送→已读追踪（`read_by[]` 独立状态）+ 30s 自动轮询
-- **ECharts 按需引入**：仅打包使用的 Line/Bar/Pie 图表 + SVGRenderer
+- **ECharts 按需引入**：仅打包使用的 Line/Bar/Pie 图表 + CanvasRenderer
 - **操作栏优化**：≥3 按钮自动收进 `el-dropdown`，统一"操作 ▾"样式
 - **滚动体验**：8px 滚动条 + Firefox 兼容 + 平滑滚动 + 表格独立横向滚动
 - **Hash 路由**：无服务端 fallback 配置需求，刷新不 404
