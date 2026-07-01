@@ -439,8 +439,6 @@ const debouncedKeyword = () => {
   }, 300);
 };
 
-useHmrData(loadData);
-
 const handlePageChange = (page) => {
   currentPage.value = page;
   loadData();
@@ -599,6 +597,9 @@ const submitResetPwd = () => {
 onMounted(() => {
   loadData();
 });
+
+useHmrData(loadData);
+
 </script>
 
 <style scoped>

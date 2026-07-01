@@ -3,6 +3,7 @@ package com.icms.controller;
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import cn.dev33.satoken.annotation.SaMode;
+import cn.dev33.satoken.stp.StpUtil;
 import com.icms.common.annotation.Log;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -81,6 +82,10 @@ public class UserController {
     @Log("修改个人登录密码")
     @PostMapping("/{id}/change-pwd")
     public Result<Void> changePwd(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        // 只能修改本人密码；管理员改他人走 reset-pwd
+        if (!id.equals(StpUtil.getLoginIdAsLong())) {
+            return Result.error(403, "只能修改本人的密码");
+        }
         String oldPassword = body.get("oldPassword");
         String newPassword = body.get("newPassword");
 

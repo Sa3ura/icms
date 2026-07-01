@@ -584,6 +584,11 @@ import {
   apiGetDevices,
   apiGetUsers
 } from '../../api';
+import { getFaultLevelLabel, getFaultLevelTag, getWorkOrderStatusLabel, getWorkOrderStatusTag } from '../../utils/mappings';
+import { InfoFilled, UserFilled, Tools, CircleCloseFilled } from '@element-plus/icons-vue';
+import { useFilterSync } from '../../composables/useFilterSync';
+import { useExport } from '../../composables/useExport';
+import { useHmrData } from '../../composables/useHmrData';
 
 const userStore = useUserStore();
 
@@ -670,12 +675,6 @@ const canReport = computed(() => ['admin', 'jw', 'teacher', 'student'].includes(
 const canAssign = computed(() => ['admin', 'jw'].includes(userStore.role));
 const isMyJob = (row) => Number(row.handler_id) === Number(userStore.userInfo.id) && userStore.role === 'repairer';
 const canClose = (row) => ['admin', 'jw'].includes(userStore.role) || Number(row.reporter_id) === Number(userStore.userInfo.id);
-
-import { getFaultLevelLabel, getFaultLevelTag, getWorkOrderStatusLabel, getWorkOrderStatusTag } from '../../utils/mappings';
-import { UserFilled, Tools, CircleCloseFilled, MoreFilled } from '@element-plus/icons-vue';
-import { useFilterSync } from '../../composables/useFilterSync';
-import { useExport } from '../../composables/useExport';
-import { useHmrData } from '../../composables/useHmrData';
 
 const resetFilters = () => {
   filters.value = { status: '', fault_level: '', classroom_id: '' };

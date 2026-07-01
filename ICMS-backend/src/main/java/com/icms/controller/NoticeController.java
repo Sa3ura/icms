@@ -3,6 +3,7 @@ package com.icms.controller;
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import cn.dev33.satoken.annotation.SaMode;
+import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -65,7 +66,8 @@ public class NoticeController {
     @PostMapping
     public Result<Map<String, Object>> save(@RequestBody Notice notice) {
         if (notice.getId() == null) {
-            notice.setPublisherId(1L);
+            // 发布人取当前登录用户，替换原来硬编码的 1L
+            notice.setPublisherId(StpUtil.getLoginIdAsLong());
             notice.setStatus("published");
             notice.setReadBy("[]");
             notice.setCreatedAt(LocalDateTime.now());
@@ -82,12 +84,13 @@ public class NoticeController {
     }
 
     @PutMapping("/{id}/read")
-    public Result<Boolean> markRead(@PathVariable Long id, @RequestBody Map<String, Object> body) {
+    public Result<Boolean> markRead(@PathVariable Long id, @RequestBody(required = false) Map<String, Object> body) {
         Notice notice = noticeService.getById(id);
         if (notice == null) {
             return Result.error("通知不存在");
         }
-        Long userId = Long.valueOf(body.get("userId").toString());
+        // 已读用户取当前登录者，忽略请求体传入，防止代他人标记
+        Long userId = StpUtil.getLoginIdAsLong();
         try {
             List<Long> readBy = objectMapper.readValue(
                     notice.getReadBy() != null ? notice.getReadBy() : "[]",
@@ -104,9 +107,10 @@ public class NoticeController {
     }
 
     @PutMapping("/read-all")
-    public Result<Map<String, Object>> markAllRead(@RequestBody Map<String, String> body) {
-        String role = body.get("role");
-        Long userId = Long.valueOf(body.get("userId"));
+    public Result<Map<String, Object>> markAllRead(@RequestBody(required = false) Map<String, String> body) {
+        String role = body != null ? body.get("role") : null;
+        // 已读用户取当前登录者，忽略请求体传入
+        Long userId = StpUtil.getLoginIdAsLong();
 
         List<Notice> all = noticeService.list();
         int marked = 0;

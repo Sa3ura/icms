@@ -220,8 +220,6 @@ const debouncedSearch = () => {
   }, 300);
 };
 
-useHmrData(loadData);
-
 const handlePageChange = (page) => {
   currentPage.value = page;
   loadData();
@@ -263,6 +261,9 @@ const loadData = async () => {
 onMounted(() => {
   loadData();
 });
+
+useHmrData(loadData);
+
 </script>
 
 <style scoped>

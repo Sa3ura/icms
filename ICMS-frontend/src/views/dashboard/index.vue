@@ -189,8 +189,6 @@ import * as echarts from 'echarts/core';
 import { LineChart, PieChart } from 'echarts/charts';
 import { TooltipComponent, GridComponent, LegendComponent } from 'echarts/components';
 import { SVGRenderer } from 'echarts/renderers';
-
-echarts.use([LineChart, PieChart, TooltipComponent, GridComponent, LegendComponent, SVGRenderer]);
 import { 
   apiGetDashboardStats, 
   apiGetClassrooms, 
@@ -199,6 +197,9 @@ import {
   apiGetSchedules,
   apiGetWeeklyUsage
 } from '../../api';
+import { getSectionTime } from '../../utils/mappings';
+
+echarts.use([LineChart, PieChart, TooltipComponent, GridComponent, LegendComponent, SVGRenderer]);
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -268,8 +269,6 @@ const handleCardClick = (path) => {
 const goToReservations = () => {
   router.push('/reservation/my');
 };
-
-import { getSectionTime } from '../../utils/mappings';
 
 const loadStats = async () => {
   const res = await apiGetDashboardStats();

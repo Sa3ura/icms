@@ -9,6 +9,7 @@ import com.icms.service.SysUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.Base64;
 
@@ -42,13 +43,15 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
     @Override
     public String rotateRefreshToken(Long userId) {
+        // 生成随机原文返回给浏览器（写入 httpOnly cookie），库里只存其 SHA-256 哈希。
+        // DB 泄露时无法反推原文，避免会话被直接冒用。
         byte[] bytes = new byte[32];
         secureRandom.nextBytes(bytes);
         String token = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
 
         SysUser user = this.getById(userId);
         if (user != null) {
-            user.setRefreshToken(token);
+            user.setRefreshToken(sha256Hex(token));
             this.updateById(user);
         }
         return token;
@@ -65,7 +68,24 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
     @Override
     public SysUser findByRefreshToken(String refreshToken) {
+        // 入参是 cookie 里的原文，先哈希再比对库中存储的哈希
         return this.getOne(new LambdaQueryWrapper<SysUser>()
-                .eq(SysUser::getRefreshToken, refreshToken));
+                .eq(SysUser::getRefreshToken, sha256Hex(refreshToken)));
+    }
+
+    // SHA-256 -> 64 位小写 hex（正好匹配 refresh_token VARCHAR(64) 列）
+    private static String sha256Hex(String input) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] digest = md.digest(input.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder(64);
+            for (byte b : digest) {
+                sb.append(Character.forDigit((b >> 4) & 0xF, 16));
+                sb.append(Character.forDigit(b & 0xF, 16));
+            }
+            return sb.toString();
+        } catch (java.security.NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA-256 不可用", e);
+        }
     }
 }

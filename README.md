@@ -160,7 +160,11 @@ npm run format     # ESLint 自动修复
 
 - **双模式运行**：Mock 模式（纯前端 localStorage）与真实 API 模式一键切换
 - **安全认证**：SaToken JWT 无状态 + `@SaCheckRole(value = {...}, mode = SaMode.OR)` 注解鉴权 + 双 Token (Access 内存/Refresh httpOnly Cookie) 防 XSS 窃取
-- **登录安全**：后端 SVG 干扰验证码 + 同 IP 5次/5分钟失败封锁 15 分钟
+- **越权防护**：写操作身份一律取自 `StpUtil.getLoginIdAsLong()`，不信任请求体传入的 id；预约取消/改密等敏感操作校验"本人或管理员"
+- **令牌加固**：Refresh Token 以 SHA-256 摘要入库，原文仅存于 httpOnly Cookie，库表泄露不可反推
+- **CORS 白名单**：`app.cors.allowed-origins` 配置化来源白名单，替代通配符，配合 `allowCredentials` 收紧跨域
+- **登录安全**：后端 SVG 干扰验证码 + 同 IP 5次/5分钟失败封锁 15 分钟（毫秒时间戳全程 `long` 计算，规避 int 溢出）
+- **密钥外置**：JWT 密钥与数据库口令移出源码，置于 gitignore 的 `application-local.yml`
 - **暗黑模式**：CSS 自定义属性 + 平滑主题过渡动画 (`theme-transitioning`)
 - **通知系统**：发布→推送→已读追踪（`read_by[]` 独立状态）+ 30s 自动轮询
 - **ECharts 按需引入**：仅打包使用的 Line/Bar/Pie 图表 + CanvasRenderer
@@ -171,5 +175,8 @@ npm run format     # ESLint 自动修复
 
 ## 交付状态
 
-已修复 **47 项**缺陷，致命安全漏洞 **4/4 全部清零**，编译/Lint 零错误。S1+S2 全部完成。  
+已修复 **47 项**缺陷，致命安全漏洞 **4/4 全部清零**，编译/Lint 零错误。S1+S2 全部完成。
+
+**安全加固轮次**（严重+中危）：登录限流 int 溢出修复、横向越权（IDOR）链路收敛、Refresh Token 哈希入库、CORS 来源白名单、工单指派空指针防护 — 后端 `BUILD SUCCESS`。
+
 可作为安全可靠的原型/Demo 演示。

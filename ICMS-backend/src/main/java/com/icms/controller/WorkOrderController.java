@@ -3,11 +3,13 @@ package com.icms.controller;
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import cn.dev33.satoken.annotation.SaMode;
+import cn.dev33.satoken.stp.StpUtil;
 import com.icms.common.annotation.Log;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.icms.common.BeanUtils;
+import com.icms.common.CustomException;
 import com.icms.common.Result;
 import com.icms.entity.Classroom;
 import com.icms.entity.Device;
@@ -87,6 +89,8 @@ public class WorkOrderController {
     @Log("提交设备故障报修")
     @PostMapping
     public Result<Map<String, Object>> create(@RequestBody WorkOrder order) {
+        // 报修人以当前登录用户为准，忽略请求体传入的 reporterId，防止伪造他人身份
+        order.setReporterId(StpUtil.getLoginIdAsLong());
         WorkOrder data = workOrderService.createWorkOrder(order);
         return Result.success(BeanUtils.toMap(data));
     }
@@ -98,6 +102,9 @@ public class WorkOrderController {
             @PathVariable Long id,
             @RequestBody Map<String, Object> body) {
         Number handlerIdNum = (Number) body.get("handlerId");
+        if (handlerIdNum == null) {
+            throw new CustomException("请指定处理人");
+        }
         Long handlerId = handlerIdNum.longValue();
         WorkOrder data = workOrderService.assignWorkOrder(id, handlerId);
         return Result.success(BeanUtils.toMap(data));

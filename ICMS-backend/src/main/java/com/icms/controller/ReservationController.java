@@ -3,11 +3,13 @@ package com.icms.controller;
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import cn.dev33.satoken.annotation.SaMode;
+import cn.dev33.satoken.stp.StpUtil;
 import com.icms.common.annotation.Log;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.icms.common.BeanUtils;
+import com.icms.common.CustomException;
 import com.icms.common.Result;
 import com.icms.entity.Classroom;
 import com.icms.entity.ClassroomReservation;
@@ -78,6 +80,8 @@ public class ReservationController {
     @Log("申请预约教室")
     @PostMapping
     public Result<Map<String, Object>> create(@RequestBody ClassroomReservation reservation) {
+        // 申请人以当前登录用户为准，忽略请求体传入的 applicantId
+        reservation.setApplicantId(StpUtil.getLoginIdAsLong());
         ClassroomReservation data = classroomReservationService.createReservation(reservation);
         return Result.success(BeanUtils.toMap(data));
     }
@@ -90,8 +94,8 @@ public class ReservationController {
             @RequestBody Map<String, Object> body) {
         String status = (String) body.get("status");
         String remark = (String) body.get("remark");
-        Number approverIdNum = (Number) body.get("approverId");
-        Long approverId = approverIdNum != null ? approverIdNum.longValue() : 1L;
+        // 审批人以当前登录用户为准，不接受请求体传入，防止伪造审批记录
+        Long approverId = StpUtil.getLoginIdAsLong();
 
         ClassroomReservation data = classroomReservationService.approveReservation(id, status, remark, approverId);
         return Result.success(BeanUtils.toMap(data));
@@ -101,10 +105,18 @@ public class ReservationController {
     @PostMapping("/{id}/cancel")
     public Result<Map<String, Object>> cancel(@PathVariable Long id) {
         ClassroomReservation r = classroomReservationService.getById(id);
-        if (r != null) {
-            r.setStatus("cancelled");
-            classroomReservationService.updateById(r);
+        if (r == null) {
+            throw new CustomException("预约记录不存在");
         }
+        // 仅本人或管理员/教务可取消，防止越权取消他人预约
+        boolean isOwner = r.getApplicantId() != null
+                && r.getApplicantId().equals(StpUtil.getLoginIdAsLong());
+        boolean isManager = StpUtil.hasRoleOr("admin", "jw");
+        if (!isOwner && !isManager) {
+            throw new CustomException(403, "无权取消他人的预约");
+        }
+        r.setStatus("cancelled");
+        classroomReservationService.updateById(r);
         return Result.success(BeanUtils.toMap(r));
     }
 }

@@ -21,7 +21,7 @@ const clearAuth = () => {
 // ==================== Axios 真实请求实例配置 ====================
 const request = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
-  timeout: 5000,
+  timeout: 10000,
   withCredentials: true
 });
 

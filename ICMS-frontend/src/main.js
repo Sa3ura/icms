@@ -46,8 +46,8 @@ router.beforeEach(async (to, _from) => {
   if (to.path !== '/login' && !refreshAttempted && !userStore.isLoggedIn) {
     refreshAttempted = true;
     const success = await userStore.tryRefresh();
-    if (success && to.path === '/login') {
-      return '/';
+    if (success) {
+      return to.fullPath;
     }
   }
 
