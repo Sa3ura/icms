@@ -589,11 +589,14 @@ onUnmounted(() => {
   letter-spacing: -0.5px;
   white-space: nowrap;
   opacity: 1;
-  transition: opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  max-width: 200px;
+  transition: opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1), max-width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .logo-title-collapsed {
   opacity: 0;
+  max-width: 0;
   pointer-events: none;
 }
 
