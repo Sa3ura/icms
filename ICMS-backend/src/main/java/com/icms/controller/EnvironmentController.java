@@ -7,11 +7,15 @@ import com.icms.service.ClassroomService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalTime;
 import java.util.*;
 
+@Tag(name = "环境监测")
 @SaCheckLogin
 @RestController
 @RequestMapping("/api/environment")
@@ -20,6 +24,7 @@ public class EnvironmentController {
     @Autowired
     private ClassroomService classroomService;
 
+    @Operation(summary = "获取教室环境监测数据")
     @GetMapping("/records")
     public Result<Map<String, Object>> getRecords(@RequestParam(required = false) Long classroomId) {
         Long cid = classroomId != null ? classroomId : 1L;

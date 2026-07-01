@@ -14,10 +14,14 @@ import com.icms.service.ClassroomService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Tag(name = "教室资源")
 @SaCheckLogin
 @RestController
 @RequestMapping("/api/classrooms")
@@ -26,6 +30,7 @@ public class ClassroomController {
     @Autowired
     private ClassroomService classroomService;
 
+    @Operation(summary = "分页查询教室资源")
     @GetMapping
     public Result<Map<String, Object>> list(
             @RequestParam(required = false) Long campus_id,
@@ -60,6 +65,7 @@ public class ClassroomController {
         return Result.success(result);
     }
 
+    @Operation(summary = "新增或修改教室资源")
     @SaCheckRole(value = {"admin", "jw"}, mode = SaMode.OR)
     @Log("新增或修改教室资源")
     @PostMapping
@@ -68,6 +74,7 @@ public class ClassroomController {
         return Result.success(BeanUtils.toMap(classroom));
     }
 
+    @Operation(summary = "删除教室资源")
     @SaCheckRole(value = {"admin", "jw"}, mode = SaMode.OR)
     @Log("删除教室资源")
     @DeleteMapping("/{id}")
@@ -76,6 +83,7 @@ public class ClassroomController {
         return Result.success();
     }
 
+    @Operation(summary = "查询空闲教室")
     @GetMapping("/free")
     public Result<List<Map<String, Object>>> getFree(
             @RequestParam String date,
@@ -90,6 +98,7 @@ public class ClassroomController {
         return Result.success(list.stream().map(BeanUtils::toMap).collect(Collectors.toList()));
     }
 
+    @Operation(summary = "检查教室预约冲突")
     @GetMapping("/check-conflict")
     public Result<Map<String, Object>> checkConflict(
             @RequestParam Long classroom_id,

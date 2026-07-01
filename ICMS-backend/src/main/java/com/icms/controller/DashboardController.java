@@ -18,10 +18,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Tag(name = "统计分析")
 @SaCheckLogin
 @RestController
 @RequestMapping("/api/stats")
@@ -42,6 +46,7 @@ public class DashboardController {
     @Autowired
     private CourseScheduleService courseScheduleService;
 
+    @Operation(summary = "获取仪表盘统计指标")
     @GetMapping("/dashboard")
     public Result<Map<String, Object>> getDashboardStats() {
         long classroomTotal = classroomService.count();
@@ -68,6 +73,7 @@ public class DashboardController {
         return Result.success(stats);
     }
 
+    @Operation(summary = "获取近7天空间使用率")
     @GetMapping("/weekly-usage")
     public Result<List<Map<String, Object>>> getWeeklyUsage() {
         long roomTotal = classroomService.count();

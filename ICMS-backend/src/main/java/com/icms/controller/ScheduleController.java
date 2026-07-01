@@ -11,6 +11,8 @@ import com.icms.common.BeanUtils;
 import com.icms.common.Result;
 import com.icms.entity.CourseSchedule;
 import com.icms.service.CourseScheduleService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,6 +20,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Tag(name = "排课管理")
 @SaCheckLogin
 @RestController
 @RequestMapping("/api/schedules")
@@ -26,6 +29,7 @@ public class ScheduleController {
     @Autowired
     private CourseScheduleService courseScheduleService;
 
+    @Operation(summary = "分页查询课程排课")
     @GetMapping
     public Result<Map<String, Object>> list(
             @RequestParam(required = false) Long classroom_id,
@@ -53,6 +57,7 @@ public class ScheduleController {
 
     @SaCheckRole(value = {"admin", "jw"}, mode = SaMode.OR)
     @Log("录入课程排课")
+    @Operation(summary = "录入或修改课程排课")
     @PostMapping
     public Result<Map<String, Object>> save(@RequestBody CourseSchedule schedule) {
         Long classroomId = schedule.getClassroomId();
@@ -85,6 +90,7 @@ public class ScheduleController {
 
     @SaCheckRole(value = {"admin", "jw"}, mode = SaMode.OR)
     @Log("删除排课课程")
+    @Operation(summary = "删除排课记录")
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {
         courseScheduleService.removeById(id);

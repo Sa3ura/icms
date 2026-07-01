@@ -18,9 +18,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import java.util.HashMap;
 import java.util.Map;
 
+@Tag(name = "认证管理")
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -37,6 +42,7 @@ public class AuthController {
     @Value("${icms.refresh-token.path:/api}")
     private String rfPath;
 
+    @Operation(summary = "获取登录验证码SVG")
     @GetMapping(value = "/captcha", produces = "image/svg+xml")
     public String captcha() {
         String captchaId = CaptchaUtil.newCaptchaId();
@@ -44,11 +50,12 @@ public class AuthController {
         return "<!--" + captchaId + "-->\n" + svg;
     }
 
+    @Operation(summary = "用户登录（账号密码+验证码）")
     @Log("用户登录")
     @PostMapping("/login")
     public Result<Map<String, Object>> login(@RequestBody Map<String, String> request,
-                                              HttpServletRequest httpRequest,
-                                              HttpServletResponse response) {
+                                              @Parameter(hidden = true) HttpServletRequest httpRequest,
+                                              @Parameter(hidden = true) HttpServletResponse response) {
         String username = request.get("username");
         String password = request.get("password");
         String captchaId = request.get("captchaId");
@@ -98,9 +105,10 @@ public class AuthController {
         return Result.success(result);
     }
 
+    @Operation(summary = "退出登录")
     @Log("用户登出")
     @PostMapping("/logout")
-    public Result<Void> logout(HttpServletResponse response) {
+    public Result<Void> logout(@Parameter(hidden = true) HttpServletResponse response) {
         if (StpUtil.isLogin()) {
             sysUserService.clearRefreshToken(StpUtil.getLoginIdAsLong());
         }
@@ -116,9 +124,10 @@ public class AuthController {
         return Result.success();
     }
 
+    @Operation(summary = "���¿来访令牌")
     @PostMapping("/refresh")
-    public Result<Map<String, Object>> refresh(HttpServletRequest request,
-                                                HttpServletResponse response) {
+    public Result<Map<String, Object>> refresh(@Parameter(hidden = true) HttpServletRequest request,
+                                                @Parameter(hidden = true) HttpServletResponse response) {
         String refreshToken = null;
         if (request.getCookies() != null) {
             for (Cookie c : request.getCookies()) {

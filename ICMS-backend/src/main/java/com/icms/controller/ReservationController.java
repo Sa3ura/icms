@@ -17,6 +17,8 @@ import com.icms.entity.SysUser;
 import com.icms.service.ClassroomReservationService;
 import com.icms.service.ClassroomService;
 import com.icms.service.SysUserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,6 +26,7 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Tag(name = "预约管理")
 @SaCheckLogin
 @RestController
 @RequestMapping("/api/reservations")
@@ -38,6 +41,7 @@ public class ReservationController {
     @Autowired
     private SysUserService sysUserService;
 
+    @Operation(summary = "分页查询教室预约")
     @GetMapping
     public Result<Map<String, Object>> list(
             @RequestParam(required = false) Long applicant_id,
@@ -59,15 +63,23 @@ public class ReservationController {
         query.orderByDesc(ClassroomReservation::getId);
         Page<ClassroomReservation> mpPage = new Page<>(page, pageSize);
         IPage<ClassroomReservation> ipage = classroomReservationService.page(mpPage, query);
-        List<Classroom> rooms = classroomService.list();
-        List<SysUser> users = sysUserService.list();
 
-        List<Map<String, Object>> records = ipage.getRecords().stream().map(r -> {
+        // 只按当前页出现过的 id 反查字典，不再全表拉 rooms / users
+        List<ClassroomReservation> pageRecords = ipage.getRecords();
+        Set<Long> roomIds = pageRecords.stream().map(ClassroomReservation::getClassroomId).filter(Objects::nonNull).collect(Collectors.toSet());
+        Set<Long> userIds = pageRecords.stream().map(ClassroomReservation::getApplicantId).filter(Objects::nonNull).collect(Collectors.toSet());
+
+        Map<Long, String> roomNames = roomIds.isEmpty() ? Collections.emptyMap()
+                : classroomService.listByIds(roomIds).stream()
+                        .collect(Collectors.toMap(Classroom::getId, Classroom::getName));
+        Map<Long, String> userNames = userIds.isEmpty() ? Collections.emptyMap()
+                : sysUserService.listByIds(userIds).stream()
+                        .collect(Collectors.toMap(SysUser::getId, SysUser::getRealName));
+
+        List<Map<String, Object>> records = pageRecords.stream().map(r -> {
             Map<String, Object> map = BeanUtils.toMap(r);
-            Classroom cr = rooms.stream().filter(c -> c.getId().equals(r.getClassroomId())).findFirst().orElse(null);
-            map.put("classroom_name", cr != null ? cr.getName() : "");
-            SysUser applicant = users.stream().filter(u -> u.getId().equals(r.getApplicantId())).findFirst().orElse(null);
-            map.put("applicant_name", applicant != null ? applicant.getRealName() : "");
+            map.put("classroom_name", roomNames.getOrDefault(r.getClassroomId(), ""));
+            map.put("applicant_name", userNames.getOrDefault(r.getApplicantId(), ""));
             return map;
         }).collect(Collectors.toList());
 
@@ -78,6 +90,7 @@ public class ReservationController {
     }
 
     @Log("申请预约教室")
+    @Operation(summary = "申请教室预约")
     @PostMapping
     public Result<Map<String, Object>> create(@RequestBody ClassroomReservation reservation) {
         // 申请人以当前登录用户为准，忽略请求体传入的 applicantId
@@ -88,6 +101,7 @@ public class ReservationController {
 
     @SaCheckRole(value = {"admin", "jw"}, mode = SaMode.OR)
     @Log("审批教室预约")
+    @Operation(summary = "审批教室预约")
     @PostMapping("/{id}/approve")
     public Result<Map<String, Object>> approve(
             @PathVariable Long id,
@@ -102,6 +116,7 @@ public class ReservationController {
     }
 
     @Log("取消教室预约")
+    @Operation(summary = "取消教室预约")
     @PostMapping("/{id}/cancel")
     public Result<Map<String, Object>> cancel(@PathVariable Long id) {
         ClassroomReservation r = classroomReservationService.getById(id);

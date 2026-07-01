@@ -1,5 +1,7 @@
 package com.icms.common;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,6 +13,7 @@ public class BeanUtils {
         Map<String, Object> map = new HashMap<>();
         try {
             for (Field field : obj.getClass().getDeclaredFields()) {
+                if (field.isAnnotationPresent(JsonIgnore.class)) continue;
                 field.setAccessible(true);
                 String camelName = field.getName();
                 String snakeName = camelToSnake(camelName);

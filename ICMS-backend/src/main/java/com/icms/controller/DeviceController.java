@@ -17,9 +17,13 @@ import org.springframework.web.bind.annotation.*;
 
 import com.icms.common.BeanUtils;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Tag(name = "设备管理")
 @SaCheckLogin
 @RestController
 @RequestMapping("/api/devices")
@@ -31,6 +35,7 @@ public class DeviceController {
     @Autowired
     private ClassroomService classroomService;
 
+    @Operation(summary = "分页查询设备列表")
     @GetMapping
     public Result<Map<String, Object>> list(
             @RequestParam(required = false) Long classroom_id,
@@ -50,12 +55,17 @@ public class DeviceController {
 
         Page<Device> mpPage = new Page<>(page, pageSize);
         IPage<Device> ipage = deviceService.page(mpPage, query);
-        List<Classroom> rooms = classroomService.list();
 
-        List<Map<String, Object>> records = ipage.getRecords().stream().map(d -> {
+        // 只按当前页出现过的 classroom_id 反查名字，避免全表拉 rooms
+        List<Device> pageRecords = ipage.getRecords();
+        Set<Long> roomIds = pageRecords.stream().map(Device::getClassroomId).filter(Objects::nonNull).collect(Collectors.toSet());
+        Map<Long, String> roomNames = roomIds.isEmpty() ? Collections.emptyMap()
+                : classroomService.listByIds(roomIds).stream()
+                        .collect(Collectors.toMap(Classroom::getId, Classroom::getName));
+
+        List<Map<String, Object>> records = pageRecords.stream().map(d -> {
             Map<String, Object> map = BeanUtils.toMap(d);
-            Classroom r = rooms.stream().filter(cr -> cr.getId().equals(d.getClassroomId())).findFirst().orElse(null);
-            map.put("classroom_name", r != null ? r.getName() : "未指派");
+            map.put("classroom_name", roomNames.getOrDefault(d.getClassroomId(), "未指派"));
             return map;
         }).collect(Collectors.toList());
 
@@ -65,6 +75,7 @@ public class DeviceController {
         return Result.success(result);
     }
 
+    @Operation(summary = "新增或修改设备档案")
     @SaCheckRole(value = {"admin", "jw"}, mode = SaMode.OR)
     @Log("录入或修改设备档案")
     @PostMapping
@@ -73,6 +84,7 @@ public class DeviceController {
         return Result.success(BeanUtils.toMap(device));
     }
 
+    @Operation(summary = "删除设备档案")
     @SaCheckRole(value = {"admin", "jw"}, mode = SaMode.OR)
     @Log("删除设备档案")
     @DeleteMapping("/{id}")

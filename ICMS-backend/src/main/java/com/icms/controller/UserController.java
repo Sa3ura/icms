@@ -14,6 +14,8 @@ import com.icms.entity.OperationLog;
 import com.icms.entity.SysUser;
 import com.icms.service.OperationLogService;
 import com.icms.service.SysUserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Tag(name = "用户与系统")
 @SaCheckLogin
 @RestController
 @RequestMapping("/api/users")
@@ -36,6 +39,7 @@ public class UserController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Operation(summary = "分页查询系统用户")
     @SaCheckRole(value = {"admin", "jw"}, mode = SaMode.OR)
     @GetMapping
     public Result<Map<String, Object>> list(
@@ -67,6 +71,7 @@ public class UserController {
 
     @SaCheckRole(value = {"admin", "jw"}, mode = SaMode.OR)
     @Log("创建或编辑系统账号")
+    @Operation(summary = "创建或编辑系统账号")
     @PostMapping
     public Result<Map<String, Object>> save(@RequestBody SysUser user) {
         if (user.getId() == null) {
@@ -80,6 +85,7 @@ public class UserController {
     }
 
     @Log("修改个人登录密码")
+    @Operation(summary = "修改个人登录密码")
     @PostMapping("/{id}/change-pwd")
     public Result<Void> changePwd(@PathVariable Long id, @RequestBody Map<String, String> body) {
         // 只能修改本人密码；管理员改他人走 reset-pwd
@@ -107,6 +113,7 @@ public class UserController {
 
     @SaCheckRole(value = {"admin", "jw"}, mode = SaMode.OR)
     @Log("重置用户密码")
+    @Operation(summary = "重置用户密码")
     @PostMapping("/{id}/reset-pwd")
     public Result<Void> resetPwd(@PathVariable Long id, @RequestBody Map<String, String> body) {
         String newPassword = body.get("newPassword");
@@ -123,6 +130,7 @@ public class UserController {
         return Result.success();
     }
 
+    @Operation(summary = "分页查询操作日志")
     @SaCheckRole(value = {"admin", "jw"}, mode = SaMode.OR)
     @GetMapping("/logs")
     public Result<Map<String, Object>> getLogs(
