@@ -558,10 +558,9 @@ onUnmounted(() => {
   height: 48px;
   display: flex;
   align-items: center;
-  margin: 4px 12px;
+  margin: 4px 12px 12px;
   padding: 0 32px;
   border-radius: var(--radius-md);
-  border-bottom: 1px solid var(--border-light);
   transition: margin 0.28s cubic-bezier(0.4, 0, 0.2, 1), padding 0.28s cubic-bezier(0.4, 0, 0.2, 1), width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
