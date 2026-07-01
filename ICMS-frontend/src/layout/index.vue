@@ -555,19 +555,16 @@ onUnmounted(() => {
 }
 
 .logo-area {
-  height: 48px;
+  height: 56px;
   display: flex;
   align-items: center;
-  margin: 4px 12px 12px;
-  padding: 0 32px;
-  border-radius: var(--radius-md);
-  transition: margin 0.28s cubic-bezier(0.4, 0, 0.2, 1), padding 0.28s cubic-bezier(0.4, 0, 0.2, 1), width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  margin: 0;
+  padding: 0 16px 0 44px;
+  transition: padding 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .logo-area.is-collapsed {
-  margin: 8px auto;
   padding: 0;
-  width: 48px;
   justify-content: center;
 }
 
