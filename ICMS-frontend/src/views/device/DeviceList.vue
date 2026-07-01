@@ -139,16 +139,19 @@
         v-loading="loading"
         :data="tableData"
         style="width: 100%"
+        @sort-change="handleSortChange"
       >
         <el-table-column
           prop="device_code"
           label="设备编码"
           width="130"
+          sortable="custom"
         />
         <el-table-column
           prop="device_name"
           label="设备名称"
           min-width="150"
+          sortable="custom"
         />
         <el-table-column
           prop="device_type"
@@ -192,6 +195,7 @@
           label="运行状态"
           width="100"
           align="center"
+          sortable="custom"
         >
           <template #default="{ row }">
             <el-tag :type="getDeviceStatusTag(row.status)">
@@ -602,6 +606,7 @@ import { Warning, Edit, Delete, MoreFilled } from '@element-plus/icons-vue';
 import { useFilterSync } from '../../composables/useFilterSync';
 import { useExport } from '../../composables/useExport';
 import { useHmrData } from '../../composables/useHmrData';
+import { useTableSort } from '../../composables/useTableSort';
 
 const resetFilters = () => {
   filters.value = { classroom_id: '', device_type: '', status: '', keyword: '' };
@@ -624,6 +629,8 @@ const loadData = async () => {
 };
 
 useHmrData(loadData);
+
+const { handleSortChange } = useTableSort(loadData);
 
 const handlePageChange = (page) => {
   currentPage.value = page;

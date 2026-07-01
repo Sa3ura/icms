@@ -66,6 +66,7 @@
         v-loading="loading"
         :data="tableData"
         style="width: 100%"
+        @sort-change="handleSortChange"
       >
         <el-table-column
           prop="id"
@@ -76,11 +77,13 @@
           prop="username"
           label="操作用户"
           width="130"
+          sortable="custom"
         />
         <el-table-column
           prop="operation"
           label="操作内容"
           min-width="150"
+          sortable="custom"
         />
         <el-table-column
           prop="request_method"
@@ -150,6 +153,7 @@
           prop="created_at"
           label="操作时间"
           width="165"
+          sortable="custom"
         />
         <template #empty>
           <el-skeleton
@@ -210,6 +214,7 @@ import { getMethodTag } from '../../utils/mappings';
 import { useFilterSync } from '../../composables/useFilterSync';
 import { useExport } from '../../composables/useExport';
 import { useHmrData } from '../../composables/useHmrData';
+import { useTableSort } from '../../composables/useTableSort';
 
 let searchTimer = null;
 const debouncedSearch = () => {
@@ -263,6 +268,8 @@ onMounted(() => {
 });
 
 useHmrData(loadData);
+
+const { handleSortChange } = useTableSort(loadData);
 
 </script>
 

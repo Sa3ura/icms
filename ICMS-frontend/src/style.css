@@ -76,6 +76,12 @@ html.dark {
   --el-border-color-lighter: #1f2937;
 }
 
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-color);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
 /* 现代排版与重置 */
 * {
   box-sizing: border-box;

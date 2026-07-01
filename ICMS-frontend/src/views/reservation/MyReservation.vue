@@ -89,6 +89,7 @@
         v-loading="loading"
         :data="tableData"
         style="width: 100%"
+        @sort-change="handleSortChange"
       >
         <el-table-column
           prop="id"
@@ -99,11 +100,13 @@
           prop="classroom_name"
           label="预约教室"
           min-width="150"
+          sortable="custom"
         />
         <el-table-column
           prop="reservation_date"
           label="预约日期"
           width="120"
+          sortable="custom"
         />
         <el-table-column
           label="节次时段"
@@ -131,6 +134,7 @@
           label="审批状态"
           width="110"
           align="center"
+          sortable="custom"
         >
           <template #default="{ row }">
             <el-tag :type="getReservationStatusTag(row.status)">
@@ -463,6 +467,7 @@ const handleSizeChange = (size) => {
 import { getSectionTime, getReservationStatusLabel, getReservationStatusTag } from '../../utils/mappings';
 import { useExport } from '../../composables/useExport';
 import { useHmrData } from '../../composables/useHmrData';
+import { useTableSort } from '../../composables/useTableSort';
 
 const resetFilters = () => {
   filters.value = { status: '', date_range: [] };
@@ -490,6 +495,8 @@ const loadData = async () => {
 };
 
 useHmrData(loadData);
+
+const { handleSortChange } = useTableSort(loadData);
 
 const handleCreate = () => {
   form.value = {

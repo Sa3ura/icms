@@ -246,6 +246,11 @@
           </transition>
         </router-view>
       </el-main>
+      <el-backtop
+        target=".content-main"
+        :right="40"
+        :bottom="40"
+      />
     </el-container>
     
     <!-- 修改密码弹窗 (现代化) -->

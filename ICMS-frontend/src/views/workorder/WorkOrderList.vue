@@ -121,11 +121,13 @@
         v-loading="loading"
         :data="tableData"
         style="width: 100%"
+        @sort-change="handleSortChange"
       >
         <el-table-column
           prop="order_no"
           label="工单编号"
           width="165"
+          sortable="custom"
         />
         <el-table-column
           prop="classroom_name"
@@ -148,6 +150,7 @@
           label="等级"
           width="90"
           align="center"
+          sortable="custom"
         >
           <template #default="{ row }">
             <el-tag :type="getFaultLevelTag(row.fault_level)">
@@ -187,6 +190,7 @@
           prop="created_at"
           label="报修时间"
           width="160"
+          sortable="custom"
         />
         <el-table-column
           prop="finished_at"
@@ -589,6 +593,7 @@ import { InfoFilled, UserFilled, Tools, CircleCloseFilled } from '@element-plus/
 import { useFilterSync } from '../../composables/useFilterSync';
 import { useExport } from '../../composables/useExport';
 import { useHmrData } from '../../composables/useHmrData';
+import { useTableSort } from '../../composables/useTableSort';
 
 const userStore = useUserStore();
 
@@ -707,6 +712,8 @@ const loadData = async () => {
 };
 
 useHmrData(loadData);
+
+const { handleSortChange } = useTableSort(loadData);
 
 const handlePageChange = (page) => {
   currentPage.value = page;

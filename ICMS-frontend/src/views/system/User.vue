@@ -92,6 +92,7 @@
         v-loading="loading"
         :data="tableData"
         style="width: 100%"
+        @sort-change="handleSortChange"
       >
         <el-table-column
           prop="id"
@@ -102,16 +103,19 @@
           prop="username"
           label="用户名"
           width="130"
+          sortable="custom"
         />
         <el-table-column
           prop="real_name"
           label="真实姓名"
           width="130"
+          sortable="custom"
         />
         <el-table-column
           prop="user_type"
           label="角色"
           width="130"
+          sortable="custom"
         >
           <template #default="{ row }">
             <el-tag :type="getRoleTag(row.user_type)">
@@ -455,6 +459,7 @@ import { Key, Delete, MoreFilled } from '@element-plus/icons-vue';
 import { useFilterSync } from '../../composables/useFilterSync';
 import { useExport } from '../../composables/useExport';
 import { useHmrData } from '../../composables/useHmrData';
+import { useTableSort } from '../../composables/useTableSort';
 
 const resetFilters = () => {
   filters.value = { user_type: '', keyword: '' };
@@ -599,6 +604,8 @@ onMounted(() => {
 });
 
 useHmrData(loadData);
+
+const { handleSortChange } = useTableSort(loadData);
 
 </script>
 

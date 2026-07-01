@@ -152,6 +152,7 @@
         v-loading="loading"
         :data="tableData"
         style="width: 100%"
+        @sort-change="handleSortChange"
         @selection-change="(rows) => selectedRows = rows"
       >
         <el-table-column
@@ -167,6 +168,7 @@
           prop="name"
           label="教室名称"
           min-width="150"
+          sortable="custom"
         />
         <el-table-column
           label="校区/楼栋/楼层"
@@ -180,6 +182,7 @@
           prop="capacity"
           label="容纳人数"
           width="100"
+          sortable="custom"
         />
         <el-table-column
           prop="room_type"
@@ -196,6 +199,7 @@
           prop="status"
           label="状态"
           width="100"
+          sortable="custom"
         >
           <template #default="{ row }">
             <el-tag :type="getClassroomStatusTag(row.status)">
@@ -715,6 +719,7 @@ import { Calendar, Cpu, Edit, Delete, ArrowDown, MoreFilled } from '@element-plu
 import { useFilterSync } from '../../composables/useFilterSync';
 import { useExport } from '../../composables/useExport';
 import { useHmrData } from '../../composables/useHmrData';
+import { useTableSort } from '../../composables/useTableSort';
 
 // 重置查询条件
 const resetFilters = () => {
@@ -747,6 +752,8 @@ const loadData = async () => {
 };
 
 useHmrData(loadData);
+
+const { handleSortChange } = useTableSort(loadData);
 
 const handleCreate = () => {
   form.value = {
