@@ -601,19 +601,10 @@ onUnmounted(() => {
   flex-grow: 1;
   padding: 0 12px;
   border-right: none;
-  transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1), padding 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .sidebar-el-menu.el-menu--collapse {
   padding: 0;
   width: 80px;
-}
-
-.sidebar-el-menu .el-menu-item {
-  transition: margin 0.28s cubic-bezier(0.4, 0, 0.2, 1), padding 0.28s cubic-bezier(0.4, 0, 0.2, 1), border-radius 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.sidebar-el-menu .el-menu-item .el-icon {
-  transition: margin 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* 顶部 Header */
