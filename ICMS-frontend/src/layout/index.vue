@@ -9,14 +9,12 @@
         class="logo-area"
         :class="{ 'is-collapsed': isCollapsed }"
       >
-        <div class="logo-icon">
-          <el-icon
-            size="22"
-            color="var(--bg-app)"
-          >
-            <School />
-          </el-icon>
-        </div>
+        <el-icon
+          size="20"
+          color="var(--text-main)"
+        >
+          <School />
+        </el-icon>
         <span
           class="logo-title"
           :class="{ 'logo-title-collapsed': isCollapsed }"
@@ -557,47 +555,37 @@ onUnmounted(() => {
 }
 
 .logo-area {
-  height: 72px;
+  height: 48px;
   display: flex;
   align-items: center;
-  padding: 0 24px;
-  gap: 12px;
-  margin-bottom: 8px;
-  transition: padding 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  margin: 4px 12px;
+  padding: 0 12px;
+  border-radius: var(--radius-md);
+  transition: margin 0.28s cubic-bezier(0.4, 0, 0.2, 1), padding 0.28s cubic-bezier(0.4, 0, 0.2, 1), width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .logo-area.is-collapsed {
+  margin: 8px auto;
   padding: 0;
-  gap: 0;
+  width: 48px;
   justify-content: center;
-}
-
-.logo-icon {
-  width: 32px;
-  height: 32px;
-  background-color: var(--primary-color);
-  border-radius: 8px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-shrink: 0;
 }
 
 .logo-title {
   color: var(--text-main);
-  font-weight: 800;
-  font-size: 18px;
-  letter-spacing: -0.5px;
+  font-weight: 700;
+  font-size: 14px;
+  margin-left: 8px;
   white-space: nowrap;
-  opacity: 1;
   overflow: hidden;
+  transition: opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1), max-width 0.28s cubic-bezier(0.4, 0, 0.2, 1), margin-left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
   max-width: 200px;
-  transition: opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1), max-width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .logo-title-collapsed {
   opacity: 0;
   max-width: 0;
+  margin-left: 0;
   pointer-events: none;
 }
 
