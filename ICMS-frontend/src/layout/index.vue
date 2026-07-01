@@ -18,8 +18,8 @@
           </el-icon>
         </div>
         <span
-          v-show="!isCollapsed"
           class="logo-title"
+          :class="{ 'logo-title-collapsed': isCollapsed }"
         >ICMS</span>
       </div>
       
@@ -551,7 +551,8 @@ onUnmounted(() => {
   border-right: 1px solid var(--border-light);
   display: flex;
   flex-direction: column;
-  transition: width 0.3s cubic-bezier(0.2, 0.8, 0.4, 1);
+  transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
   z-index: 10;
 }
 
@@ -562,7 +563,7 @@ onUnmounted(() => {
   padding: 0 24px;
   gap: 12px;
   margin-bottom: 8px;
-  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.4, 1);
+  transition: padding 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .logo-area.is-collapsed {
@@ -587,16 +588,32 @@ onUnmounted(() => {
   font-size: 18px;
   letter-spacing: -0.5px;
   white-space: nowrap;
+  opacity: 1;
+  transition: opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.logo-title-collapsed {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .sidebar-el-menu {
   flex-grow: 1;
   padding: 0 12px;
   border-right: none;
+  transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1), padding 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .sidebar-el-menu.el-menu--collapse {
   padding: 0;
   width: 80px;
+}
+
+.sidebar-el-menu .el-menu-item {
+  transition: margin 0.28s cubic-bezier(0.4, 0, 0.2, 1), padding 0.28s cubic-bezier(0.4, 0, 0.2, 1), border-radius 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-el-menu .el-menu-item .el-icon {
+  transition: margin 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* 顶部 Header */
