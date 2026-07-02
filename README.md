@@ -107,6 +107,8 @@ VITE_USE_MOCK=false
 VITE_API_BASE_URL=http://localhost:8080
 ```
 
+生产构建使用同源 `/api` 反向代理时，保持 `.env.production` 中 `VITE_API_BASE_URL=` 为空即可。前端请求路径本身已包含 `/api` 前缀，避免配置为 `/api` 后生成 `/api/api/...`。
+
 ## 后端启动
 
 ```bash
@@ -179,11 +181,28 @@ npm run format     # ESLint 自动修复
 
 ## 交付状态
 
-已修复 **47 项**缺陷，致命安全漏洞 **4/4 全部清零**，编译/Lint 零错误。S1+S2 全部完成。
+已修复 **51 项**缺陷，致命安全漏洞 **4/4 全部清零**，编译/Lint 零错误。S1+S2+S3 全部完成。
 
 **安全加固轮次**（严重+中危）：登录限流 int 溢出修复、横向越权（IDOR）链路收敛、Refresh Token 哈希入库、CORS 来源白名单、工单指派空指针防护 — 后端 `BUILD SUCCESS`。
 
 可作为安全可靠的原型/Demo 演示。
+
+## 前端审查修复更新（2026-07-02）
+
+- 生产环境 API baseURL 改为空同源模式，配合 nginx `/api` 反向代理，避免 `/api/api/...` 路径错误。
+- `tryRefresh()` 成功后同步写入内存 access token，刷新页面后后续接口继续携带 `Authorization`。
+- `useTableSort` 改为对当前页数据执行本地排序，7 个表格页面的排序按钮不再只是 UI 状态。
+- 预约审批和操作日志搜索改为先拉足量数据再本地过滤分页，搜索结果与分页 `total` 保持一致。
+
+验证命令：
+
+```bash
+cd ICMS-frontend
+npm run lint
+npm run build
+```
+
+当前前端验证结果：Lint 通过，生产构建通过；构建阶段仅有第三方依赖 pure annotation 与 chunk size 警告。
 
 ## 安全修复更新（2026-07-02）
 

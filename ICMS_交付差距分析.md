@@ -1,12 +1,12 @@
 # ICMS 交付差距分析报告
 
-> 报告日期：2026-06-24 | 更新：2026-07-01 | 分析范围：ICMS 智慧教室管理系统全栈
+> 报告日期：2026-06-24 | 更新：2026-07-02 | 分析范围：ICMS 智慧教室管理系统全栈
 
 ---
 
-## 一、已修复缺陷 (40 项 → 47 项)
+## 一、已修复缺陷 (40 项 → 51 项)
 
-### 1.1 前端缺陷 (25/25)
+### 1.1 前端缺陷与审查回归修复 (29/29)
 
 | # | 类别 | 问题 | 状态 |
 |---|------|------|------|
@@ -35,6 +35,10 @@
 | 23 | 兼容 | `el-link` underline boolean 已弃用 (Element Plus 3.0) | ✅ `:underline="false"` → `underline="never"` |
 | 24 | 兼容 | 退出登录闪"访客" + 页面状态残留 | ✅ page reload 清全局状态 |
 | 25 | 兼容 | 登录页刷新抛"刷新令牌不存在" | ✅ `to.path === '/login'` 跳过 tryRefresh |
+| 48 | 生产 | 生产环境 `VITE_API_BASE_URL=/api` 叠加接口路径导致 `/api/api/...` | ✅ `.env.production` 改为空同源 base，API 层统一 `API_BASE_URL` |
+| 49 | 认证 | `tryRefresh()` 成功后未同步内存 access token，刷新后后续请求不带 `Authorization` | ✅ refresh 成功后调用 `setToken(res.data.token)` |
+| 50 | UX | 表格列排序只更新状态，不改变数据顺序 | ✅ `useTableSort(tableData, loadData)` 对当前页数据执行本地排序 |
+| 51 | 分页 | 预约审批/操作日志搜索只过滤当前页，`total` 仍显示全量 | ✅ 有筛选时拉足量数据，本地过滤并重新分页/计算 `total` |
 
 ### 1.2 后端对接修复 (14/14)
 
@@ -213,7 +217,7 @@
 | # | 问题 | 现状 | 状态 |
 |---|------|------|------|
 | 1 | 无骨架屏 | 8 个表格页面已用 `el-skeleton` 替换 `v-loading` 转圈 | ✅ 已修复 (71e49bb) |
-| 2 | 表格无列排序 | 7 个表格页面已加 `sortable="custom"`，新建 `useTableSort` composable 本地排序 | ✅ 已修复 (6dccc1b) |
+| 2 | 表格无列排序 | 7 个表格页面已加 `sortable="custom"`，`useTableSort(tableData, loadData)` 已对当前页数据执行本地排序 | ✅ 已修复并复核 (8d5c0c2) |
 | 3 | 表格 `fixed="right"` 无阴影 | `remove_fixed.py` 已删除所有固定列，问题不再适用 | — 不适用 |
 | 4 | 无"回到顶部"按钮 | `layout/index.vue` 加全局 `<el-backtop target=".content-main" />` | ✅ 已修复 (6dccc1b) |
 | 5 | 滚动条 hover 色在暗黑模式下不明显 | 暗黑模式 `::-webkit-scrollbar-thumb:hover` 改用 `--accent-color` (indigo) | ✅ 已修复 (6dccc1b) |
@@ -252,9 +256,19 @@
 ### S3 — 第二周迭代（✅ 全部完成）
 
 ```
-✅ 表格排序（新建 useTableSort composable，7 个页面 key 列 sortable="custom"）
+✅ 表格排序（useTableSort 对当前页数据真实排序，7 个页面 key 列 sortable="custom"）
 ✅ 回到顶部（layout/index.vue 全局 <el-backtop>）
 ✅ 滚动条暗黑 hover 色优化（style.css 暗黑 thumb hover 改 accent-color）
+```
+
+### 2026-07-02 前端审查回归修复
+
+```
+✅ 生产 API baseURL 同源配置，避免 /api/api 路径错误
+✅ refresh 后同步内存 access token，刷新页面后接口继续带 Authorization
+✅ 表格排序从 UI 状态改为当前页真实排序
+✅ Approval / Log 搜索分页 total 与过滤结果一致
+✅ npm run lint / npm run build 通过
 ```
 
 ### S4 — 长期基建（持续）
