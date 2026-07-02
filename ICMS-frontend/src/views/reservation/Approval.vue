@@ -345,17 +345,24 @@ const handleSizeChange = (size) => {
 const loadData = async () => {
   loading.value = true;
   try {
-    const params = { page: currentPage.value, pageSize: pageSize.value };
+    const keyword = filters.value.keyword.trim().toLowerCase();
+    const params = {
+      page: keyword ? 1 : currentPage.value,
+      pageSize: keyword ? 10000 : pageSize.value
+    };
     if (filters.value.status) params.status = filters.value.status;
     const res = await apiGetReservations(params);
     if (res.code === 200) {
       let list = res.data.records;
-      if (filters.value.keyword) {
-        const kw = filters.value.keyword.toLowerCase();
-        list = list.filter(r => r.applicant_name.toLowerCase().includes(kw));
+      if (keyword) {
+        list = list.filter(r => (r.applicant_name || '').toLowerCase().includes(keyword));
+        total.value = list.length;
+        const start = (currentPage.value - 1) * pageSize.value;
+        tableData.value = list.slice(start, start + pageSize.value);
+      } else {
+        tableData.value = list;
+        total.value = res.data.total;
       }
-      tableData.value = list;
-      total.value = res.data.total;
     }
   } catch (error) {
     ElMessage.error(error.message);
@@ -366,7 +373,7 @@ const loadData = async () => {
 
 useHmrData(loadData);
 
-const { handleSortChange } = useTableSort(loadData);
+const { handleSortChange } = useTableSort(tableData, loadData);
 
 const openApprovalDialog = (row, type) => {
   activeRow.value = row;

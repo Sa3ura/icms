@@ -630,7 +630,7 @@ const loadData = async () => {
 
 useHmrData(loadData);
 
-const { handleSortChange } = useTableSort(loadData);
+const { handleSortChange } = useTableSort(tableData, loadData);
 
 const handlePageChange = (page) => {
   currentPage.value = page;

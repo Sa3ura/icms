@@ -496,7 +496,7 @@ const loadData = async () => {
 
 useHmrData(loadData);
 
-const { handleSortChange } = useTableSort(loadData);
+const { handleSortChange } = useTableSort(tableData, loadData);
 
 const handleCreate = () => {
   form.value = {

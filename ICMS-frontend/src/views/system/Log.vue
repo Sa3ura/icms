@@ -244,17 +244,30 @@ const resetFilters = () => {
 const loadData = async () => {
   loading.value = true;
   try {
-    const res = await apiGetLogs({ page: currentPage.value, pageSize: pageSize.value });
+    const username = filters.value.username.trim().toLowerCase();
+    const operation = filters.value.operation.trim().toLowerCase();
+    const hasFilter = Boolean(username || operation);
+    const res = await apiGetLogs({
+      page: hasFilter ? 1 : currentPage.value,
+      pageSize: hasFilter ? 10000 : pageSize.value,
+      ...filters.value
+    });
     if (res.code === 200) {
       let list = res.data.records;
-      if (filters.value.username) {
-        list = list.filter(l => l.username.toLowerCase().includes(filters.value.username.toLowerCase()));
+      if (username) {
+        list = list.filter(l => (l.username || '').toLowerCase().includes(username));
       }
-      if (filters.value.operation) {
-        list = list.filter(l => l.operation.toLowerCase().includes(filters.value.operation.toLowerCase()));
+      if (operation) {
+        list = list.filter(l => (l.operation || '').toLowerCase().includes(operation));
       }
-      tableData.value = list;
-      total.value = res.data.total;
+      if (hasFilter) {
+        total.value = list.length;
+        const start = (currentPage.value - 1) * pageSize.value;
+        tableData.value = list.slice(start, start + pageSize.value);
+      } else {
+        tableData.value = list;
+        total.value = res.data.total;
+      }
     }
   } catch (error) {
     ElMessage.error('无法读取操作审计日志');
@@ -269,7 +282,7 @@ onMounted(() => {
 
 useHmrData(loadData);
 
-const { handleSortChange } = useTableSort(loadData);
+const { handleSortChange } = useTableSort(tableData, loadData);
 
 </script>
 

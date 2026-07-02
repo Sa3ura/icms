@@ -605,7 +605,7 @@ onMounted(() => {
 
 useHmrData(loadData);
 
-const { handleSortChange } = useTableSort(loadData);
+const { handleSortChange } = useTableSort(tableData, loadData);
 
 </script>
 

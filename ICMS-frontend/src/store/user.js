@@ -54,6 +54,7 @@ export const useUserStore = defineStore('user', {
         if (res.code === 200 && res.data.token) {
           this.token = res.data.token;
           this.userInfo = res.data.userInfo;
+          setToken(res.data.token);
           localStorage.setItem('icms_user_info', JSON.stringify(this.userInfo));
           return true;
         }

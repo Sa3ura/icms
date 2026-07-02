@@ -4,6 +4,7 @@ import axios from 'axios';
 
 // ==================== 模式开关 ====================
 const USE_MOCK = import.meta.env.VITE_USE_MOCK !== 'false';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080';
 
 // ==================== 内存 Token 管理 (防 XSS) ====================
 let accessToken = null;
@@ -20,7 +21,7 @@ const clearAuth = () => {
 
 // ==================== Axios 真实请求实例配置 ====================
 const request = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
+  baseURL: API_BASE_URL,
   timeout: 10000,
   withCredentials: true
 });
@@ -124,7 +125,7 @@ const logOperation = (username, operation, method, url, params, status, errorMsg
 // ==================== 验证码 ====================
 export const apiGetCaptcha = async () => {
   if (!USE_MOCK) {
-    const res = await axios.get(import.meta.env.VITE_API_BASE_URL + '/api/auth/captcha', {
+    const res = await axios.get(`${API_BASE_URL}/api/auth/captcha`, {
       withCredentials: true,
       responseType: 'text'
     });
@@ -369,6 +370,10 @@ export const apiGetReservations = ({ page = 1, pageSize = 10, ...query } = {}) =
     if (query.applicant_id) list = list.filter(r => Number(r.applicant_id) === Number(query.applicant_id));
     if (query.status) list = list.filter(r => r.status === query.status);
     if (query.classroom_id) list = list.filter(r => Number(r.classroom_id) === Number(query.classroom_id));
+    if (query.keyword) {
+      const kw = query.keyword.toLowerCase();
+      list = list.filter(r => (r.applicant_name || '').toLowerCase().includes(kw));
+    }
     if (query.date_range && query.date_range.length === 2) {
       const [start, end] = query.date_range;
       list = list.filter(r => r.reservation_date >= start && r.reservation_date <= end);
@@ -787,13 +792,22 @@ export const apiResetPassword = (id, newPassword, username) => {
   });
 };
 
-export const apiGetLogs = ({ page = 1, pageSize = 10 } = {}) => {
+export const apiGetLogs = ({ page = 1, pageSize = 10, ...query } = {}) => {
   if (!USE_MOCK) {
-    return request.get('/api/users/logs', { params: { page, pageSize } });
+    return request.get('/api/users/logs', { params: { page, pageSize, ...query } });
   }
   
   return mockRequest('getLogs', () => {
-    const list = db.getTable('operation_logs').sort((a, b) => b.id - a.id);
+    let list = db.getTable('operation_logs');
+    if (query.username) {
+      const kw = query.username.toLowerCase();
+      list = list.filter(l => (l.username || '').toLowerCase().includes(kw));
+    }
+    if (query.operation) {
+      const kw = query.operation.toLowerCase();
+      list = list.filter(l => (l.operation || '').toLowerCase().includes(kw));
+    }
+    list = list.sort((a, b) => b.id - a.id);
     return mockPaginate(list, page, pageSize);
   });
 };
