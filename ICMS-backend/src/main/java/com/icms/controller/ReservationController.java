@@ -52,7 +52,11 @@ public class ReservationController {
             @RequestParam(defaultValue = "10") Integer pageSize) {
 
         LambdaQueryWrapper<ClassroomReservation> query = new LambdaQueryWrapper<ClassroomReservation>();
-        if (applicant_id != null) query.eq(ClassroomReservation::getApplicantId, applicant_id);
+        if (StpUtil.hasRoleOr("admin", "jw")) {
+            if (applicant_id != null) query.eq(ClassroomReservation::getApplicantId, applicant_id);
+        } else {
+            query.eq(ClassroomReservation::getApplicantId, StpUtil.getLoginIdAsLong());
+        }
         if (status != null && !status.isEmpty()) query.eq(ClassroomReservation::getStatus, status);
         if (classroom_id != null) query.eq(ClassroomReservation::getClassroomId, classroom_id);
         if (date_range != null && date_range.size() == 2) {
@@ -108,6 +112,9 @@ public class ReservationController {
             @RequestBody Map<String, Object> body) {
         String status = (String) body.get("status");
         String remark = (String) body.get("remark");
+        if (!"approved".equals(status) && !"rejected".equals(status)) {
+            throw new CustomException("Invalid approval status");
+        }
         // 审批人以当前登录用户为准，不接受请求体传入，防止伪造审批记录
         Long approverId = StpUtil.getLoginIdAsLong();
 

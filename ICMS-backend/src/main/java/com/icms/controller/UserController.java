@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.icms.common.BeanUtils;
+import com.icms.common.CustomException;
 import com.icms.common.Result;
 import com.icms.entity.OperationLog;
 import com.icms.entity.SysUser;
@@ -73,12 +74,25 @@ public class UserController {
     @Log("创建或编辑系统账号")
     @Operation(summary = "创建或编辑系统账号")
     @PostMapping
-    public Result<Map<String, Object>> save(@RequestBody SysUser user) {
-        if (user.getId() == null) {
-            String rawPwd = user.getPassword() != null ? user.getPassword() : "123456";
+    public Result<Map<String, Object>> save(@RequestBody Map<String, Object> body) {
+        Long id = longValue(body.get("id"));
+        SysUser user = id == null ? new SysUser() : sysUserService.getById(id);
+        if (user == null) {
+            throw new CustomException("User not found");
+        }
+
+        applyUserFields(user, body);
+
+        if (id == null) {
+            String rawPwd = stringValue(body.get("password"));
+            if (rawPwd == null || rawPwd.isEmpty()) {
+                rawPwd = "123456";
+            }
             user.setPassword(passwordEncoder.encode(rawPwd));
             user.setStatus(1);
             user.setCreatedAt(LocalDateTime.now());
+        } else {
+            user.setUpdatedAt(LocalDateTime.now());
         }
         sysUserService.saveOrUpdate(user);
         return Result.success(userToMap(user));
@@ -155,7 +169,37 @@ public class UserController {
     private Map<String, Object> userToMap(SysUser user) {
         Map<String, Object> map = BeanUtils.toMap(user);
         map.remove("password");
+        map.remove("refresh_token");
         map.remove("deleted");
         return map;
+    }
+
+    private void applyUserFields(SysUser user, Map<String, Object> body) {
+        if (body.containsKey("username")) user.setUsername(stringValue(body.get("username")));
+        if (body.containsKey("realName")) user.setRealName(stringValue(body.get("realName")));
+        if (body.containsKey("real_name")) user.setRealName(stringValue(body.get("real_name")));
+        if (body.containsKey("email")) user.setEmail(stringValue(body.get("email")));
+        if (body.containsKey("phone")) user.setPhone(stringValue(body.get("phone")));
+        if (body.containsKey("userType")) user.setUserType(stringValue(body.get("userType")));
+        if (body.containsKey("user_type")) user.setUserType(stringValue(body.get("user_type")));
+        if (body.containsKey("status")) user.setStatus(intValue(body.get("status")));
+    }
+
+    private String stringValue(Object value) {
+        return value == null ? null : String.valueOf(value);
+    }
+
+    private Long longValue(Object value) {
+        if (value == null) return null;
+        if (value instanceof Number number) return number.longValue();
+        String text = String.valueOf(value);
+        return text.isEmpty() ? null : Long.parseLong(text);
+    }
+
+    private Integer intValue(Object value) {
+        if (value == null) return null;
+        if (value instanceof Number number) return number.intValue();
+        String text = String.valueOf(value);
+        return text.isEmpty() ? null : Integer.parseInt(text);
     }
 }

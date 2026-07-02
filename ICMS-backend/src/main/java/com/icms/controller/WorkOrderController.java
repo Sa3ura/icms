@@ -57,8 +57,14 @@ public class WorkOrderController {
             @RequestParam(defaultValue = "10") Integer pageSize) {
 
         LambdaQueryWrapper<WorkOrder> query = new LambdaQueryWrapper<WorkOrder>();
-        if (reporter_id != null) query.eq(WorkOrder::getReporterId, reporter_id);
-        if (handler_id != null) query.eq(WorkOrder::getHandlerId, handler_id);
+        if (StpUtil.hasRoleOr("admin", "jw")) {
+            if (reporter_id != null) query.eq(WorkOrder::getReporterId, reporter_id);
+            if (handler_id != null) query.eq(WorkOrder::getHandlerId, handler_id);
+        } else if (StpUtil.hasRole("repairer")) {
+            query.eq(WorkOrder::getHandlerId, StpUtil.getLoginIdAsLong());
+        } else {
+            query.eq(WorkOrder::getReporterId, StpUtil.getLoginIdAsLong());
+        }
         if (status != null && !status.isEmpty()) query.eq(WorkOrder::getStatus, status);
         if (fault_level != null && !fault_level.isEmpty()) query.eq(WorkOrder::getFaultLevel, fault_level);
         if (classroom_id != null) query.eq(WorkOrder::getClassroomId, classroom_id);
@@ -138,7 +144,15 @@ public class WorkOrderController {
             @RequestBody Map<String, String> body) {
         String status = body.get("status");
         String result = body.get("handleResult");
-        WorkOrder data = workOrderService.handleWorkOrder(id, status, result);
+        if (!"processing".equals(status) && !"finished".equals(status)) {
+            throw new CustomException("Invalid work order status");
+        }
+        WorkOrder data = workOrderService.handleWorkOrder(
+                id,
+                status,
+                result,
+                StpUtil.getLoginIdAsLong(),
+                StpUtil.hasRoleOr("admin", "jw"));
         return Result.success(BeanUtils.toMap(data));
     }
 
@@ -148,10 +162,12 @@ public class WorkOrderController {
     @PostMapping("/{id}/close")
     public Result<Map<String, Object>> close(@PathVariable Long id) {
         WorkOrder order = workOrderService.getById(id);
-        if (order != null) {
-            order.setStatus("closed");
-            workOrderService.updateById(order);
+        if (order == null) {
+            throw new CustomException("Work order not found");
         }
+        order.setStatus("closed");
+        order.setUpdatedAt(java.time.LocalDateTime.now());
+        workOrderService.updateById(order);
         return Result.success(BeanUtils.toMap(order));
     }
 }

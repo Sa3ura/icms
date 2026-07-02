@@ -6,5 +6,5 @@ import com.icms.entity.WorkOrder;
 public interface WorkOrderService extends IService<WorkOrder> {
     WorkOrder createWorkOrder(WorkOrder workOrder);
     WorkOrder assignWorkOrder(Long id, Long handlerId);
-    WorkOrder handleWorkOrder(Long id, String status, String result);
+    WorkOrder handleWorkOrder(Long id, String status, String result, Long currentUserId, boolean isManager);
 }

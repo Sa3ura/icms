@@ -184,3 +184,27 @@ npm run format     # ESLint 自动修复
 **安全加固轮次**（严重+中危）：登录限流 int 溢出修复、横向越权（IDOR）链路收敛、Refresh Token 哈希入库、CORS 来源白名单、工单指派空指针防护 — 后端 `BUILD SUCCESS`。
 
 可作为安全可靠的原型/Demo 演示。
+
+## 安全修复更新（2026-07-02）
+
+- 登录限流已覆盖验证码失败和账号/密码失败；成功登录后才清除失败计数。
+- 预约与工单列表接口按当前登录用户自动收敛数据范围：`admin`/`jw` 可查全量，普通用户仅查本人数据，`repairer` 仅查分配给自己的工单。
+- 工单处理接口 `POST /api/work-orders/{id}/handle` 的 `status` 仅允许 `processing`、`finished`，且维修人员只能处理自己的工单。
+- 预约审批接口 `POST /api/reservations/{id}/approve` 的 `status` 仅允许 `approved`、`rejected`，审批更新会校验记录仍处于 `pending`。
+- 用户保存接口已改为字段白名单，忽略请求体中的 `password`、`refreshToken`、`deleted` 等敏感字段；密码变更只走修改/重置密码接口。
+- Refresh Token Cookie 新增配置 `icms.refresh-token.secure`。本地默认 `false`；生产 HTTPS 环境应设为 `true`。
+
+```yaml
+icms:
+  refresh-token:
+    secure: true
+```
+
+验证命令：
+
+```bash
+cd ICMS-backend
+mvnw.cmd test
+```
+
+当前后端测试结果：`Tests run: 5, Failures: 0, Errors: 0`。

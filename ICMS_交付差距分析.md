@@ -288,3 +288,27 @@
 > S1 零项、S2 七项、S3 三项全部完成。剩余 S4 长期基建 (测试/CI/CD/监控)。
 
 > 全系统 **0 编译/构建错误**。Knife4j 文档已覆盖 11 模块/40 接口 (`http://localhost:8080/doc.html`)。前端 `npm run dev` 演示。后端需 MySQL 后 `mvnw.cmd spring-boot:run` 启动。Flyway 管理 DDL，SaToken 管理认证与鉴权。
+
+---
+
+## 2026-07-02 后端安全复核修复
+
+本轮复核针对后端认证、权限边界、状态流转和过度绑定风险进行加固，以下问题已关闭：
+
+| 风险项 | 修复结果 |
+|---|---|
+| 密码错误不计入登录限流 | `AuthController.login` 捕获账号/密码失败并记录 `LoginLimiter` 失败次数，成功登录后才清零 |
+| 普通用户可枚举全部预约/工单 | 预约列表强制普通用户仅看本人；工单列表按角色收敛，维修人员仅看分配给自己的工单 |
+| 任意维修人员可处理任意工单 | `WorkOrderServiceImpl.handleWorkOrder` 校验处理人，非管理角色必须匹配 `handlerId` |
+| 工单/预约状态可任意写入 | 工单处理仅允许 `processing`、`finished`；预约审批仅允许 `approved`、`rejected` |
+| 用户保存接口过度绑定 | `UserController.save` 改为白名单字段写入，忽略 `password`、`refreshToken`、`deleted` 等敏感字段 |
+| Refresh Cookie 生产安全属性 | 新增 `icms.refresh-token.secure` 配置，生产 HTTPS 环境应设为 `true` |
+
+验证结果：
+
+```bash
+cd ICMS-backend
+mvnw.cmd test
+```
+
+结果：`BUILD SUCCESS`，`Tests run: 5, Failures: 0, Errors: 0`。新增测试覆盖用户保存白名单和工单处理权限/状态流转。

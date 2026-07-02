@@ -72,10 +72,24 @@ public class WorkOrderServiceImpl extends ServiceImpl<WorkOrderMapper, WorkOrder
 
     @Override
     @Transactional
-    public WorkOrder handleWorkOrder(Long id, String status, String result) {
+    public WorkOrder handleWorkOrder(Long id, String status, String result, Long currentUserId, boolean isManager) {
         WorkOrder order = this.getById(id);
         if (order == null) {
             throw new CustomException("工单不存在");
+        }
+        if (!"processing".equals(status) && !"finished".equals(status)) {
+            throw new CustomException("Invalid work order status");
+        }
+        if (!isManager && (order.getHandlerId() == null || !order.getHandlerId().equals(currentUserId))) {
+            throw new CustomException(403, "No permission to handle this work order");
+        }
+        if ("processing".equals(status) && !"assigned".equals(order.getStatus())) {
+            throw new CustomException("Invalid work order transition");
+        }
+        if ("finished".equals(status)
+                && !"assigned".equals(order.getStatus())
+                && !"processing".equals(order.getStatus())) {
+            throw new CustomException("Invalid work order transition");
         }
 
         // status: processing(处理中), finished(已修复)

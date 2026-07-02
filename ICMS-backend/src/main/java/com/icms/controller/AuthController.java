@@ -42,6 +42,9 @@ public class AuthController {
     @Value("${icms.refresh-token.path:/api}")
     private String rfPath;
 
+    @Value("${icms.refresh-token.secure:false}")
+    private boolean rfSecure;
+
     @Operation(summary = "获取登录验证码SVG")
     @GetMapping(value = "/captcha", produces = "image/svg+xml")
     public String captcha() {
@@ -76,7 +79,13 @@ public class AuthController {
             throw new CustomException("验证码错误或已过期，请刷新重试");
         }
 
-        SysUser user = sysUserService.validateLogin(username, password);
+        SysUser user;
+        try {
+            user = sysUserService.validateLogin(username, password);
+        } catch (CustomException e) {
+            LoginLimiter.recordFailure(rateKey);
+            throw e;
+        }
 
         LoginLimiter.clear(rateKey);
 
@@ -88,7 +97,7 @@ public class AuthController {
 
         Cookie cookie = new Cookie(rfCookieName, refreshToken);
         cookie.setHttpOnly(true);
-        cookie.setSecure(false); // 本地开发不用 HTTPS，生产环境改为 true
+        cookie.setSecure(rfSecure);
         cookie.setPath(rfPath);
         cookie.setMaxAge(rfMaxAge);
         cookie.setAttribute("SameSite", "Strict");
@@ -116,6 +125,7 @@ public class AuthController {
 
         Cookie cookie = new Cookie(rfCookieName, "");
         cookie.setHttpOnly(true);
+        cookie.setSecure(rfSecure);
         cookie.setPath(rfPath);
         cookie.setMaxAge(0);
         cookie.setAttribute("SameSite", "Strict");
@@ -154,6 +164,7 @@ public class AuthController {
 
         Cookie cookie = new Cookie(rfCookieName, newRefreshToken);
         cookie.setHttpOnly(true);
+        cookie.setSecure(rfSecure);
         cookie.setPath(rfPath);
         cookie.setMaxAge(rfMaxAge);
         cookie.setAttribute("SameSite", "Strict");

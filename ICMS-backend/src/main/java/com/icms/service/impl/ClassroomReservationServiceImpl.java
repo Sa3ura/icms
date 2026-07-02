@@ -1,5 +1,6 @@
 package com.icms.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.icms.common.CustomException;
 import com.icms.entity.ApprovalRecord;
@@ -60,7 +61,10 @@ public class ClassroomReservationServiceImpl extends ServiceImpl<ClassroomReserv
 
     @Override
     @Transactional
-    public ClassroomReservation approveReservation(Long id, String status, String remark, Long approverId) {
+    public synchronized ClassroomReservation approveReservation(Long id, String status, String remark, Long approverId) {
+        if (!"approved".equals(status) && !"rejected".equals(status)) {
+            throw new CustomException("Invalid approval status");
+        }
         ClassroomReservation reservation = this.getById(id);
         if (reservation == null) {
             throw new CustomException("预约记录不存在");
@@ -78,10 +82,6 @@ public class ClassroomReservationServiceImpl extends ServiceImpl<ClassroomReserv
                     reservation.getEndSection()
             );
             if (hasConflict) {
-                // 自动将状态更新为 rejected，防并发导致的二次冲突
-                reservation.setStatus("rejected");
-                reservation.setApprovalRemark("发生冲突：该教室已被抢占");
-                this.updateById(reservation);
                 throw new CustomException("审批失败：该时间段已被其他预约通过或已被排课");
             }
         }
@@ -90,7 +90,12 @@ public class ClassroomReservationServiceImpl extends ServiceImpl<ClassroomReserv
         reservation.setStatus(status);
         reservation.setApprovalRemark(remark);
         reservation.setUpdatedAt(LocalDateTime.now());
-        this.updateById(reservation);
+        boolean updated = this.update(reservation, new LambdaUpdateWrapper<ClassroomReservation>()
+                .eq(ClassroomReservation::getId, id)
+                .eq(ClassroomReservation::getStatus, "pending"));
+        if (!updated) {
+            throw new CustomException("预约状态已变化，请刷新后重试");
+        }
 
         // 3. 写入审批记录
         ApprovalRecord record = new ApprovalRecord();
