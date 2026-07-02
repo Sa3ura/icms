@@ -123,6 +123,7 @@ public class NoticeController {
     }
 
     @Operation(summary = "获取通知已读用户列表")
+    @SaCheckRole(value = {"admin", "jw"}, mode = SaMode.OR)
     @GetMapping("/{id}/read-users")
     public Result<List<Map<String, Object>>> getReadUsers(@PathVariable Long id) {
         Notice notice = noticeService.getById(id);

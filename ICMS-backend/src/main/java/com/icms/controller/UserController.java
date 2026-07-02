@@ -98,6 +98,22 @@ public class UserController {
         return Result.success(userToMap(user));
     }
 
+    @SaCheckRole(value = {"admin", "jw"}, mode = SaMode.OR)
+    @Log("删除系统账号")
+    @Operation(summary = "删除系统账号")
+    @DeleteMapping("/{id}")
+    public Result<Void> delete(@PathVariable Long id) {
+        SysUser user = sysUserService.getById(id);
+        if (user == null) {
+            throw new CustomException("User not found");
+        }
+        if ("admin".equals(user.getUsername())) {
+            throw new CustomException("Admin user cannot be deleted");
+        }
+        sysUserService.removeById(id);
+        return Result.success();
+    }
+
     @Log("修改个人登录密码")
     @Operation(summary = "修改个人登录密码")
     @PostMapping("/{id}/change-pwd")

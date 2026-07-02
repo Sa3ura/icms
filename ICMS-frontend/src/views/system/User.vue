@@ -359,7 +359,7 @@
 import { ref, onMounted } from 'vue';
 import { useUserStore } from '../../store/user';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { apiGetUsers, apiSaveUser, apiResetPassword } from '../../api';
+import { apiGetUsers, apiSaveUser, apiDeleteUser, apiResetPassword } from '../../api';
 
 const userStore = useUserStore();
 
@@ -543,7 +543,7 @@ const handleDelete = async (row) => {
     return;
   }
   try {
-    await apiSaveUser({ ...row, deleted: 1 }, userStore.userInfo.username);
+    await apiDeleteUser(row.id, userStore.userInfo.username);
     ElMessage.success('成功删除用户');
     loadData();
   } catch (e) {

@@ -780,6 +780,18 @@ export const apiSaveUser = (user, username) => {
   });
 };
 
+export const apiDeleteUser = (id, username) => {
+  if (!USE_MOCK) {
+    return request.delete(`/api/users/${id}`);
+  }
+
+  return mockRequest('deleteUser', () => {
+    const result = db.remove('users', id, true);
+    logOperation(username, '删除系统用户', 'DELETE', `/api/users/${id}`, { id }, 'success');
+    return result;
+  });
+};
+
 export const apiResetPassword = (id, newPassword, username) => {
   if (!USE_MOCK) {
     return request.post(`/api/users/${id}/reset-pwd`, { newPassword });

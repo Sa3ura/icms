@@ -51,7 +51,6 @@
         <!-- MyBatis / MyBatis-Plus SQL 日志 -->
         <Logger name="com.icms.mapper" level="DEBUG" additivity="false">
             <AppenderRef ref="SqlFile"/>
-            <AppenderRef ref="Console"/>
         </Logger>
 
         <!-- Flyway 迁移日志 -->

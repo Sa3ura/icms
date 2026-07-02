@@ -1,5 +1,6 @@
 package com.icms.controller;
 
+import com.icms.common.CustomException;
 import com.icms.entity.SysUser;
 import com.icms.service.OperationLogService;
 import com.icms.service.SysUserService;
@@ -11,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -76,6 +78,35 @@ class UserControllerTest {
         assertEquals("existing-hash", saved.getPassword());
         assertEquals("existing-refresh", saved.getRefreshToken());
         assertEquals(0, saved.getDeleted());
+    }
+
+    @Test
+    void deletesExistingNonAdminUser() {
+        SysUserService sysUserService = mock(SysUserService.class);
+        UserController controller = newController(sysUserService, mock(PasswordEncoder.class));
+
+        SysUser existing = new SysUser();
+        existing.setId(7L);
+        existing.setUsername("teacher");
+        when(sysUserService.getById(7L)).thenReturn(existing);
+        when(sysUserService.removeById(7L)).thenReturn(true);
+
+        controller.delete(7L);
+
+        verify(sysUserService).removeById(7L);
+    }
+
+    @Test
+    void rejectsDeletingAdminUser() {
+        SysUserService sysUserService = mock(SysUserService.class);
+        UserController controller = newController(sysUserService, mock(PasswordEncoder.class));
+
+        SysUser existing = new SysUser();
+        existing.setId(1L);
+        existing.setUsername("admin");
+        when(sysUserService.getById(1L)).thenReturn(existing);
+
+        assertThrows(CustomException.class, () -> controller.delete(1L));
     }
 
     private UserController newController(SysUserService sysUserService, PasswordEncoder passwordEncoder) {

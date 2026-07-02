@@ -1,6 +1,7 @@
 package com.icms.controller;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
+import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.icms.common.Result;
 import com.icms.entity.Classroom;
@@ -50,18 +51,36 @@ public class DashboardController {
     @GetMapping("/dashboard")
     public Result<Map<String, Object>> getDashboardStats() {
         long classroomTotal = classroomService.count();
-        
-        long todayReservations = classroomReservationService.count(new LambdaQueryWrapper<ClassroomReservation>()
-                .eq(ClassroomReservation::getReservationDate, LocalDate.now()));
-                
-        long pendingApprovals = classroomReservationService.count(new LambdaQueryWrapper<ClassroomReservation>()
-                .eq(ClassroomReservation::getStatus, "pending"));
-                
-        long pendingWorkOrders = workOrderService.count(new LambdaQueryWrapper<WorkOrder>()
-                .in(WorkOrder::getStatus, Arrays.asList("submitted", "assigned", "processing")));
-                
         long faultyDevices = deviceService.count(new LambdaQueryWrapper<Device>()
                 .eq(Device::getStatus, "fault"));
+
+        long todayReservations;
+        long pendingApprovals;
+        long pendingWorkOrders;
+        if (StpUtil.hasRoleOr("admin", "jw")) {
+            todayReservations = classroomReservationService.count(new LambdaQueryWrapper<ClassroomReservation>()
+                    .eq(ClassroomReservation::getReservationDate, LocalDate.now()));
+            pendingApprovals = classroomReservationService.count(new LambdaQueryWrapper<ClassroomReservation>()
+                    .eq(ClassroomReservation::getStatus, "pending"));
+            pendingWorkOrders = workOrderService.count(new LambdaQueryWrapper<WorkOrder>()
+                    .in(WorkOrder::getStatus, Arrays.asList("submitted", "assigned", "processing")));
+        } else if (StpUtil.hasRole("repairer")) {
+            Long userId = StpUtil.getLoginIdAsLong();
+            todayReservations = 0;
+            pendingApprovals = 0;
+            pendingWorkOrders = workOrderService.count(new LambdaQueryWrapper<WorkOrder>()
+                    .eq(WorkOrder::getHandlerId, userId)
+                    .in(WorkOrder::getStatus, Arrays.asList("assigned", "processing")));
+        } else {
+            Long userId = StpUtil.getLoginIdAsLong();
+            todayReservations = classroomReservationService.count(new LambdaQueryWrapper<ClassroomReservation>()
+                    .eq(ClassroomReservation::getApplicantId, userId)
+                    .eq(ClassroomReservation::getReservationDate, LocalDate.now()));
+            pendingApprovals = 0;
+            pendingWorkOrders = workOrderService.count(new LambdaQueryWrapper<WorkOrder>()
+                    .eq(WorkOrder::getReporterId, userId)
+                    .in(WorkOrder::getStatus, Arrays.asList("submitted", "assigned", "processing")));
+        }
 
         Map<String, Object> stats = new HashMap<>();
         stats.put("classroomTotal", classroomTotal);

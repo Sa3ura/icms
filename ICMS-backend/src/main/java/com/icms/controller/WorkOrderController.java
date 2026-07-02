@@ -156,7 +156,6 @@ public class WorkOrderController {
         return Result.success(BeanUtils.toMap(data));
     }
 
-    @SaCheckRole(value = {"admin", "jw"}, mode = SaMode.OR)
     @Log("关闭故障工单")
     @Operation(summary = "关闭报修工单")
     @PostMapping("/{id}/close")
@@ -164,6 +163,15 @@ public class WorkOrderController {
         WorkOrder order = workOrderService.getById(id);
         if (order == null) {
             throw new CustomException("Work order not found");
+        }
+        boolean isManager = StpUtil.hasRoleOr("admin", "jw");
+        boolean isReporter = order.getReporterId() != null
+                && order.getReporterId().equals(StpUtil.getLoginIdAsLong());
+        if (!isManager && !isReporter) {
+            throw new CustomException(403, "No permission to close this work order");
+        }
+        if (!"finished".equals(order.getStatus())) {
+            throw new CustomException("Only finished work orders can be closed");
         }
         order.setStatus("closed");
         order.setUpdatedAt(java.time.LocalDateTime.now());
