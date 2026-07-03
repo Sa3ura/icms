@@ -149,6 +149,11 @@ npm run build      # 生产构建
 npm run preview    # 预览生产构建
 npm run lint       # ESLint 检查
 npm run format     # ESLint 自动修复
+npm test           # Vitest 单元测试 (20 用例)
+
+# 后端
+mvnw.cmd spring-boot:run  # 启动后端
+mvnw.cmd test              # JUnit5 单元测试 (17 用例)
 ```
 
 ## 用户角色
@@ -181,7 +186,7 @@ npm run format     # ESLint 自动修复
 
 ## 交付状态
 
-已修复 **51 项**缺陷，致命安全漏洞 **4/4 全部清零**，编译/Lint 零错误。S1+S2+S3 全部完成。
+已修复 **51 项**缺陷，致命安全漏洞 **4/4 全部清零**，编译/Lint 零错误。S1+S2+S3 全部完成。**单元测试 37 用例全绿**（后端 17 + 前端 20）。
 
 **安全加固轮次**（严重+中危）：登录限流 int 溢出修复、横向越权（IDOR）链路收敛、Refresh Token 哈希入库、CORS 来源白名单、工单指派空指针防护 — 后端 `BUILD SUCCESS`。
 

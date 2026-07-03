@@ -224,13 +224,13 @@
 
 ---
 
-## 六、零保障 — 测试与基础设施 (4 项)
+## 六、质量保障 — 测试与基础设施 (4 项，1/4 已完成)
 
-> **定义**：没有质量保障手段，无法证明系统可靠性。
+> **定义**：质量保障手段，证明系统可靠性。
 
 | # | 问题 | 现状 | 方案 |
 |---|------|------|------|
-| 1 | 零单元测试 | 无 `*.test.js`、无 `vitest` 依赖 | 引入 vitest + @vue/test-utils，核心 utils / composables 覆盖率 >80% |
+| 1 | ✅ 单元测试已引入 | 后端 17 个 JUnit5 测试（含 AuthController 安全测试 5 个）；前端引入 vitest，20 个用例覆盖 composables + mappings | `mvnw.cmd test` / `npm test` 全部通过 |
 | 2 | 零 E2E 测试 | 无 Cypress / Playwright | 至少覆盖 5 条核心流程（登录→预约→审批→完结） |
 | 3 | 无 CI/CD | 无 GitHub Actions / GitLab CI | 添加 `.github/workflows/ci.yml`：lint → test → build |
 | 4 | 无错误监控 | 无 Sentry / 自定义埋点 | 接入 `@sentry/vue`，错误边界捕获未处理异常并上报 |
