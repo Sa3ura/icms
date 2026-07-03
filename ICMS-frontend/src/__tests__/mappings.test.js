@@ -2,10 +2,9 @@ import { describe, it, expect } from 'vitest';
 import {
   getRoomTypeLabel, getRoomTypeTag,
   getClassroomStatusLabel, getClassroomStatusTag,
-  getDeviceStatusLabel, getDeviceStatusTag, getDeviceTypeLabel, getDeviceTypeTag,
+  getDeviceStatusLabel, getDeviceTypeLabel,
   getReservationStatusLabel, getReservationStatusTag,
-  getWorkOrderStatusLabel, getWorkOrderStatusTag,
-  getFaultLevelLabel, getFaultLevelTag,
+  getWorkOrderStatusLabel, getFaultLevelLabel,
   getRoleLabel, getRoleTag, getMethodTag,
   getWeekdayLabel, getSectionTime
 } from '../utils/mappings';
