@@ -111,7 +111,7 @@ VITE_API_BASE_URL=http://localhost:8080
 
 生产构建使用同源 `/api` 反向代理时，保持 `.env.production` 中 `VITE_API_BASE_URL=` 为空即可。前端请求路径本身已包含 `/api` 前缀，避免配置为 `/api` 后生成 `/api/api/...`。
 
-## 后端启动
+## 后端启动（开发环境）
 
 ```bash
 cd ICMS-backend
@@ -119,7 +119,7 @@ cd ICMS-backend
 # 1. 创建数据库（仅需一次）
 # mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS icms DEFAULT CHARACTER SET utf8mb4;"
 
-# 2. 修改 application.yml 中的数据库连接信息
+# 2. 创建 application-local.yml 填写数据库连接 + JWT 密钥
 
 # 3. 启动（Flyway 自动建表 + DatabaseInitializer 播种数据）
 ./mvnw spring-boot:run   # Linux/Mac
@@ -129,6 +129,43 @@ mvnw.cmd spring-boot:run # Windows
 启动时 Flyway 自动执行 `db/migration/` 下的版本化 SQL 脚本，无需手动导入建表文件。
 
 启动后访问 `http://localhost:8080/doc.html` 可查看 Knife4j API 文档（各接口带中文 `@Tag` / `@Operation` 模块与摘要）。
+
+## Linux 生产部署
+
+```bash
+# 1. 设置环境变量
+export DB_URL=jdbc:mysql://your-host:3306/icms?useSSL=false&characterEncoding=utf8&serverTimezone=UTC&allowPublicKeyRetrieval=true
+export DB_USERNAME=root
+export DB_PASSWORD=your-password
+export JWT_SECRET_KEY=your-64-character-random-secret
+export REFRESH_TOKEN_SECURE=true   # HTTPS 上线后设为 true
+
+# 2. 构建后端（首次自动下载 Maven 3.9.6）
+cd ICMS-backend
+chmod +x mvnw
+./mvnw package -DskipTests
+
+# 3. 构建前端
+cd ../ICMS-frontend
+npm ci
+npm run build
+
+# 4. 启动（前端 dist/ 直接由 Spring Boot 提供静态资源）
+
+#  方式 A：Spring Boot 内嵌静态文件
+#  将 ICMS-frontend/dist/ 复制到 ICMS-backend/src/main/resources/static/
+#  重新 package 后 java -jar 启动，单端口 8080 同时提供前后端
+
+#  方式 B：Nginx 反向代理（推荐生产环境）
+#  Nginx 监听 80/443，/api 代理到 localhost:8080，其他请求指向 dist/
+#  示例 nginx.conf：
+#    location /api/ { proxy_pass http://127.0.0.1:8080/api/; }
+#    location /doc.html { proxy_pass http://127.0.0.1:8080; }
+#    location / { root /opt/icms/dist; try_files $uri /index.html; }
+
+cd ../ICMS-backend
+java -jar target/icms-backend-1.0.0.jar
+```
 
 ## 默认账户
 
