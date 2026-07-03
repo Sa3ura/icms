@@ -187,6 +187,7 @@ class AuthControllerTest {
         ReflectionTestUtils.setField(controller, "rfPath", "/api");
         ReflectionTestUtils.setField(controller, "rfMaxAge", 604800);
         ReflectionTestUtils.setField(controller, "rfSecure", false);
+        ReflectionTestUtils.setField(controller, "captchaEnabled", true);
         return controller;
     }
 }

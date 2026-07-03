@@ -55,7 +55,7 @@ jobs:
           restore-keys: ${{ runner.os }}-maven-
 
       - name: Integration Test
-        run: chmod +x mvnw && ./mvnw verify -B -Dskip.unit.tests=true
+        run: chmod +x mvnw && ./mvnw verify -B
 
       - uses: actions/upload-artifact@v4
         if: always()

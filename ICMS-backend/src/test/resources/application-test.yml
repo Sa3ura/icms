@@ -18,3 +18,4 @@ icms:
 
 sa-token:
   is-log: false
+  jwt-secret-key: it-test-secret-key-64-chars-long-do-not-use-in-prod
