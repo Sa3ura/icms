@@ -26,6 +26,11 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('ICMS-backend/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
 
+      - uses: actions/cache@v4
+        with:
+          path: ICMS-backend/.mvn/apache-maven-3.9.6
+          key: ${{ runner.os }}-maven-dist-3.9.6
+
       - name: Unit Test
         run: chmod +x mvnw && ./mvnw test -B
 
@@ -53,6 +58,11 @@ jobs:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('ICMS-backend/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
+
+      - uses: actions/cache@v4
+        with:
+          path: ICMS-backend/.mvn/apache-maven-3.9.6
+          key: ${{ runner.os }}-maven-dist-3.9.6
 
       - name: Integration Test
         run: chmod +x mvnw && ./mvnw verify -B
@@ -158,6 +168,11 @@ jobs:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('ICMS-backend/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
+
+      - uses: actions/cache@v4
+        with:
+          path: ICMS-backend/.mvn/apache-maven-3.9.6
+          key: ${{ runner.os }}-maven-dist-3.9.6
 
       - uses: actions/setup-node@v4
         with:
