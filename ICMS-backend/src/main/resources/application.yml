@@ -47,6 +47,8 @@ sa-token:
   jwt-secret-key: ${JWT_SECRET_KEY:}
 
 icms:
+  captcha:
+    enabled: true   # 集成测试 / E2E 时设为 false 跳过验证码
   refresh-token:
     cookie-name: icms_rf
     max-age: 604800

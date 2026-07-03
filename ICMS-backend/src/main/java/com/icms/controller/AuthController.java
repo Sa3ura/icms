@@ -45,6 +45,9 @@ public class AuthController {
     @Value("${icms.refresh-token.secure:false}")
     private boolean rfSecure;
 
+    @Value("${icms.captcha.enabled:true}")
+    private boolean captchaEnabled;
+
     @Operation(summary = "获取登录验证码SVG")
     @GetMapping(value = "/captcha", produces = "image/svg+xml")
     public String captcha() {
@@ -74,7 +77,7 @@ public class AuthController {
         }
 
         // 2. 验证码校验
-        if (captchaId == null || captchaCode == null || !CaptchaUtil.validate(captchaId, captchaCode)) {
+        if (captchaEnabled && (captchaId == null || captchaCode == null || !CaptchaUtil.validate(captchaId, captchaCode))) {
             LoginLimiter.recordFailure(rateKey);
             throw new CustomException("验证码错误或已过期，请刷新重试");
         }

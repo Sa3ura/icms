@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "dev:e2e": "vite --mode e2e",
+    "dev:e2e-real": "vite --mode e2e-real",
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",

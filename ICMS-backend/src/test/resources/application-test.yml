@@ -1,0 +1,20 @@
+spring:
+  datasource:
+    url: jdbc:tc:mysql:8.0:///icms
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+    username: test
+    password: test
+
+  flyway:
+    locations: classpath:db/migration
+
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl
+
+icms:
+  captcha:
+    enabled: false
+
+sa-token:
+  is-log: false
