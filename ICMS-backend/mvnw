@@ -1,0 +1,45 @@
+#!/bin/sh
+# ----------------------------------------------------------------------------
+# ICMS Maven Bootstrapper for Linux/macOS
+# ----------------------------------------------------------------------------
+
+set -e
+
+DIR="$(cd "$(dirname "$0")" && pwd)"
+MAVEN_VER="3.9.6"
+MAVEN_HOME="$DIR/.mvn/apache-maven-$MAVEN_VER"
+MAVEN_ZIP="$DIR/.mvn/maven.zip"
+
+if [ -x "$MAVEN_HOME/bin/mvn" ]; then
+    exec "$MAVEN_HOME/bin/mvn" "$@"
+fi
+
+echo "[ICMS Backend] Local Maven not found. Downloading Maven $MAVEN_VER..."
+
+if [ ! -d "$DIR/.mvn" ]; then
+    mkdir -p "$DIR/.mvn"
+fi
+
+MAVEN_URL="https://archive.apache.org/dist/maven/maven-3/$MAVEN_VER/binaries/apache-maven-$MAVEN_VER-bin.zip"
+
+if command -v curl >/dev/null 2>&1; then
+    curl -fsSL -o "$MAVEN_ZIP" "$MAVEN_URL"
+elif command -v wget >/dev/null 2>&1; then
+    wget -q -O "$MAVEN_ZIP" "$MAVEN_URL"
+else
+    echo "[ERROR] Neither curl nor wget found. Please install one first."
+    exit 1
+fi
+
+echo "[ICMS Backend] Extracting Maven..."
+if command -v unzip >/dev/null 2>&1; then
+    unzip -qo "$MAVEN_ZIP" -d "$DIR/.mvn"
+else
+    echo "[ERROR] unzip not found. Please install it first."
+    exit 1
+fi
+
+rm -f "$MAVEN_ZIP"
+echo "[ICMS Backend] Maven bootstrap completed successfully."
+
+exec "$MAVEN_HOME/bin/mvn" "$@"

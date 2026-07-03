@@ -53,7 +53,7 @@ icms:
     path: /api
     http-only: true
     same-site: Strict
-    secure: false
+    secure: ${REFRESH_TOKEN_SECURE:false}
 
 # Knife4j API 文档配置
 springdoc:
