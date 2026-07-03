@@ -1,5 +1,7 @@
 # ICMS — 智慧教室管理系统
 
+[![CI](https://github.com/Sa3ura/icms/actions/workflows/ci.yml/badge.svg)](https://github.com/Sa3ura/icms/actions/workflows/ci.yml)
+
 Intelligent Classroom Management System — 基于 Vue 3 + Spring Boot 的全栈智慧校园教室资源管理平台。
 
 ## 技术栈
@@ -184,6 +186,7 @@ mvnw.cmd test              # JUnit5 单元测试 (17 用例)
 - **滚动体验**：8px 滚动条 + Firefox 兼容 + 平滑滚动 + 表格独立横向滚动
 - **Hash 路由**：无服务端 fallback 配置需求，刷新不 404
 - **数据库版本管理**：Flyway `V1__init_schema.sql` → `V2__add_refresh_token.sql` 自动增量迁移
+- **CI/CD**：GitHub Actions 自动集成，push/PR 触发后端 17 用例 + 前端 lint/build/20 用例 + E2E 6 流程，报告可下载
 
 ## 交付状态
 
