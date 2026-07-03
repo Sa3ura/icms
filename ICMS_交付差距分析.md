@@ -231,7 +231,7 @@
 | # | 问题 | 现状 | 方案 |
 |---|------|------|------|
 | 1 | ✅ 单元测试已引入 | 后端 17 个 JUnit5 测试（含 AuthController 安全测试 5 个）；前端引入 vitest，20 个用例覆盖 composables + mappings | `mvnw.cmd test` / `npm test` 全部通过 |
-| 2 | 零 E2E 测试 | 无 Cypress / Playwright | 至少覆盖 5 条核心流程（登录→预约→审批→完结） |
+| 2 | ✅ E2E 测试已引入 | 6 条 Playwright 流程（登录/预约/审批/工单/用户管理）+ 录屏截图 | `npm run test:e2e` 6/6 全部通过 |
 | 3 | 无 CI/CD | 无 GitHub Actions / GitLab CI | 添加 `.github/workflows/ci.yml`：lint → test → build |
 | 4 | 无错误监控 | 无 Sentry / 自定义埋点 | 接入 `@sentry/vue`，错误边界捕获未处理异常并上报 |
 
