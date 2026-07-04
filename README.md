@@ -334,3 +334,34 @@ icms:
 ```
 
 修改后执行 `nginx -t && systemctl reload nginx`，并重启 Java 后端。若登录返回 `Invalid CORS request`，优先检查浏览器 Network 中 `POST /api/auth/login` 的 Request URL 是否为 `https://your-domain.example/api/auth/login`，以及后端 CORS 白名单是否包含 HTTPS 域名。
+
+## Sentry 监控配置
+
+前端已接入 `@sentry/vue`。生产环境配置以下变量后重新构建前端即可启用，未配置 `VITE_SENTRY_DSN` 时不会上报：
+
+```env
+VITE_SENTRY_DSN=
+VITE_SENTRY_ENVIRONMENT=production
+VITE_SENTRY_RELEASE=icms@<commit-or-version>
+VITE_SENTRY_TRACES_SAMPLE_RATE=0.1
+```
+
+如需上传 source map，再在构建环境配置以下变量；三项都存在时 Vite 才会启用 Sentry 上传插件：
+
+```env
+SENTRY_AUTH_TOKEN=
+SENTRY_ORG=
+SENTRY_PROJECT=
+```
+
+后端已接入 Sentry Spring Boot 3 starter。将以下配置放到服务器外部配置文件或环境变量中，不要提交真实 DSN：
+
+```yaml
+sentry:
+  dsn:
+  environment: production
+  traces-sample-rate: 0.1
+  send-default-pii: false
+```
+
+后端只在兜底系统异常处理器中主动上报 500 级异常；业务异常、未登录和权限不足不会主动上报。

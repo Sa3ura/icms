@@ -41,6 +41,13 @@
             <artifactId>spring-boot-starter-log4j2</artifactId>
         </dependency>
 
+        <!-- Sentry monitoring for Spring Boot 3 / Jakarta -->
+        <dependency>
+            <groupId>io.sentry</groupId>
+            <artifactId>sentry-spring-boot-starter-jakarta</artifactId>
+            <version>8.47.0</version>
+        </dependency>
+
         <!-- Sa-Token 权限认证 (替换 Spring Security) -->
         <dependency>
             <groupId>cn.dev33</groupId>

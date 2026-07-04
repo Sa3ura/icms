@@ -1,5 +1,6 @@
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
+import * as Sentry from '@sentry/vue';
 import App from './App.vue';
 import router from './router';
 import { useUserStore } from './store/user';
@@ -21,7 +22,26 @@ app.use(pinia);
 app.use(router);
 app.use(ElementPlus);
 
+if (import.meta.env.VITE_SENTRY_DSN) {
+  Sentry.init({
+    app,
+    dsn: import.meta.env.VITE_SENTRY_DSN,
+    environment: import.meta.env.VITE_SENTRY_ENVIRONMENT || import.meta.env.MODE,
+    release: import.meta.env.VITE_SENTRY_RELEASE,
+    integrations: [
+      Sentry.browserTracingIntegration({ router })
+    ],
+    tracesSampleRate: Number(import.meta.env.VITE_SENTRY_TRACES_SAMPLE_RATE || 0.1),
+    sendDefaultPii: false
+  });
+}
+
 app.config.errorHandler = (err, instance, info) => {
+  if (import.meta.env.VITE_SENTRY_DSN) {
+    Sentry.captureException(err, {
+      tags: { vueInfo: info }
+    });
+  }
   console.error('[ICMS Error]', err, info);
   ElMessage.error({
     message: '系统发生异常，请刷新页面后重试',
