@@ -319,7 +319,9 @@ server {
 }
 ```
 
-Cloudflare DNS 使用橙云代理时，SSL/TLS 模式建议选择 `Full (strict)`。后端外部配置需要放行线上来源，并在 HTTPS 下启用安全 Cookie：
+Cloudflare DNS 使用橙云代理时，SSL/TLS 模式建议选择 `Full (strict)`。不使用 Cloudflare 时，也应保留 `X-Real-IP`、`X-Forwarded-For`、`X-Forwarded-Proto` 等标准代理头；后端会按 `CF-Connecting-IP`、`True-Client-IP`、`X-Real-IP`、`X-Forwarded-For`、`Forwarded` 的顺序解析真实客户端 IP，最后回退到 `remoteAddr`。不要把 Spring Boot `8080` 直接暴露公网，避免客户端伪造代理头。
+
+后端外部配置需要放行线上来源，并在 HTTPS 下启用安全 Cookie：
 
 ```yaml
 app:

@@ -78,6 +78,37 @@ class AuthControllerTest {
     }
 
     @Test
+    void loginRateLimitUsesForwardedClientIp() {
+        SysUserService sysUserService = mock(SysUserService.class);
+        AuthController controller = newAuthController(sysUserService);
+
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        when(request.getHeader("CF-Connecting-IP")).thenReturn(null);
+        when(request.getHeader("True-Client-IP")).thenReturn(null);
+        when(request.getHeader("X-Real-IP")).thenReturn(null);
+        when(request.getHeader("X-Forwarded-For")).thenReturn("198.51.100.60, 127.0.0.1");
+        when(request.getHeader("Forwarded")).thenReturn(null);
+
+        Map<String, String> body = new HashMap<>();
+        body.put("username", "admin");
+        body.put("password", "123456");
+        body.put("captchaId", "x");
+        body.put("captchaCode", "y");
+
+        try (MockedStatic<LoginLimiter> limiter = mockStatic(LoginLimiter.class)) {
+            String rateKey = "198.51.100.60::admin";
+            limiter.when(() -> LoginLimiter.buildKey("admin", "198.51.100.60")).thenReturn(rateKey);
+            limiter.when(() -> LoginLimiter.isBlocked(rateKey)).thenReturn(true);
+            limiter.when(() -> LoginLimiter.getBlockSeconds(rateKey)).thenReturn(900L);
+
+            assertThrows(CustomException.class, () -> controller.login(body, request, mock(HttpServletResponse.class)));
+
+            limiter.verify(() -> LoginLimiter.buildKey("admin", "198.51.100.60"));
+            verify(sysUserService, never()).validateLogin(any(), any());
+        }
+    }
+
+    @Test
     void loginFailsWithInvalidCaptcha() {
         SysUserService sysUserService = mock(SysUserService.class);
         AuthController controller = newAuthController(sysUserService);

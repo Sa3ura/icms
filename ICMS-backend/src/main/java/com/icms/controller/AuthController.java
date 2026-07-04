@@ -6,6 +6,7 @@ import com.icms.common.BeanUtils;
 import com.icms.common.CustomException;
 import com.icms.common.Result;
 import com.icms.common.annotation.Log;
+import com.icms.common.util.RequestClientUtil;
 import com.icms.entity.SysUser;
 import com.icms.security.CaptchaUtil;
 import com.icms.security.LoginLimiter;
@@ -67,7 +68,7 @@ public class AuthController {
         String captchaId = request.get("captchaId");
         String captchaCode = request.get("captchaCode");
 
-        String ip = httpRequest.getRemoteAddr();
+        String ip = RequestClientUtil.getClientIp(httpRequest);
         String rateKey = LoginLimiter.buildKey(username, ip);
 
         // 1. 频率限制检查
