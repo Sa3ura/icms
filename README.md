@@ -273,3 +273,62 @@ mvnw.cmd test
 ```
 
 当前后端测试结果：`Tests run: 5, Failures: 0, Errors: 0`。
+
+## 宝塔 + Cloudflare HTTPS 部署
+
+前端生产环境使用同源 API，不要把 `VITE_API_BASE_URL` 配成 `/api`，因为前端 API 代码已经包含 `/api` 前缀：
+
+```env
+VITE_USE_MOCK=false
+VITE_API_BASE_URL=
+```
+
+Vue 构建后只上传 `ICMS-frontend/dist/` 内的文件到宝塔站点根目录，例如 `/www/wwwroot/icms.hypixel.asia/`。宝塔站点选择纯静态，后端 Spring Boot 单独运行在 `127.0.0.1:8080`。
+
+开启 SSL 后，确认 Nginx 的 80/443 `server` 块内同时包含 Vue fallback 和 `/api` 反代：
+
+```nginx
+server {
+    listen 80;
+    listen 443 ssl;
+    http2 on;
+    server_name icms.hypixel.asia;
+    root /www/wwwroot/icms.hypixel.asia;
+    index index.html index.htm default.html;
+
+    ssl_certificate /www/server/panel/vhost/cert/icms.hypixel.asia/fullchain.pem;
+    ssl_certificate_key /www/server/panel/vhost/cert/icms.hypixel.asia/privkey.pem;
+    error_page 497 https://$host$request_uri;
+
+    location /api/ {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Port $server_port;
+        proxy_connect_timeout 60s;
+        proxy_read_timeout 60s;
+        proxy_send_timeout 60s;
+    }
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
+```
+
+Cloudflare DNS 使用橙云代理时，SSL/TLS 模式建议选择 `Full (strict)`。后端外部配置需要放行线上来源，并在 HTTPS 下启用安全 Cookie：
+
+```yaml
+app:
+  cors:
+    allowed-origins: https://icms.hypixel.asia,http://icms.hypixel.asia
+
+icms:
+  refresh-token:
+    secure: true
+```
+
+修改后执行 `nginx -t && systemctl reload nginx`，并重启 Java 后端。若登录返回 `Invalid CORS request`，优先检查浏览器 Network 中 `POST /api/auth/login` 的 Request URL 是否为 `https://icms.hypixel.asia/api/auth/login`，以及后端 CORS 白名单是否包含 HTTPS 域名。
