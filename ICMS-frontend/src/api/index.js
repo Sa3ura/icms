@@ -385,7 +385,15 @@ export const apiGetReservations = ({ page = 1, pageSize = 10, ...query } = {}) =
 
 export const apiCreateReservation = (reservation, username) => {
   if (!USE_MOCK) {
-    return request.post('/api/reservations', reservation);
+    return request.post('/api/reservations', {
+      classroomId: reservation.classroom_id,
+      reservationDate: reservation.reservation_date,
+      startSection: reservation.start_section,
+      endSection: reservation.end_section,
+      attendeeCount: reservation.attendee_count,
+      contactPhone: reservation.contact_phone,
+      purpose: reservation.purpose
+    });
   }
   
   return mockRequest('createReservation', () => {
