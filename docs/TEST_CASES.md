@@ -36,8 +36,11 @@ CI 配置文件位于 `.github/workflows/ci.yml`。当前流水线包含以下 j
 | `frontend-unit` | `npm run build` | 前端生产构建 | - |
 | `frontend-e2e` | `npm run test:e2e` | Playwright mock E2E 流程 | `e2e-screenshots` |
 | `frontend-e2e-real` | `npx playwright test --config e2e/playwright.real.config.js --reporter=line` | 连接 MySQL 和真实后端的 E2E 流程 | `e2e-real-screenshots` |
+| `test-document` | `actions/upload-artifact@v4` | 上传测试用例与验证说明文档 | `test-cases-document` |
 
 答辩时可使用 GitHub Actions 的绿色通过记录、测试报告 artifact 和 Playwright 截图作为测试证据。
+
+流水线结束后，可在 Actions 运行详情页的 Artifacts 区域下载 `test-cases-document`，其中包含本文档 `docs/TEST_CASES.md`。该产物用于答辩时快速展示测试范围、CI 验证项和核心用例矩阵。
 
 ## 4. 后端自动化测试用例
 
@@ -89,6 +92,6 @@ CI 配置文件位于 `.github/workflows/ci.yml`。当前流水线包含以下 j
 
 ## 8. 测试结论
 
-ICMS 当前已通过 GitHub Actions 覆盖后端单元测试、后端集成测试、前端 lint、前端单元测试、前端构建、Playwright mock E2E 和真实后端 E2E。结合人工部署验证，系统已覆盖登录认证、教室预约、审批、工单、用户管理、操作日志、仪表盘和监控等核心场景，满足答辩演示与基础交付验证要求。
+ICMS 当前已通过 GitHub Actions 覆盖后端单元测试、后端集成测试、前端 lint、前端单元测试、前端构建、Playwright mock E2E 和真实后端 E2E，并在 CI 中输出 `test-cases-document` 作为测试用例文档产物。结合人工部署验证，系统已覆盖登录认证、教室预约、审批、工单、用户管理、操作日志、仪表盘和监控等核心场景，满足答辩演示与基础交付验证要求。
 
 后续可继续补充更细粒度的前端组件测试、更多跨角色 E2E 场景、CI/CD 自动部署和 Sentry Release / Source Map 验证。
