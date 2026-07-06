@@ -210,3 +210,21 @@ jobs:
         with:
           name: e2e-real-screenshots
           path: ICMS-frontend/test-results/
+  test-document:
+    runs-on: ubuntu-latest
+    needs:
+      - backend
+      - backend-it
+      - frontend-unit
+      - frontend-e2e
+      - frontend-e2e-real
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Upload Test Cases Document
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-cases-document
+          path: docs/TEST_CASES.md
+          if-no-files-found: error
