@@ -343,8 +343,16 @@ const updateCharts = async () => {
     try {
       const usageRes = await apiGetWeeklyUsage();
       if (usageRes.code === 200 && usageRes.data) {
-        const weekLabels = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
-        chartLabels = usageRes.data.map(d => weekLabels[d.dayOfWeek]);
+        const weekLabels = {
+          1: '周一',
+          2: '周二',
+          3: '周三',
+          4: '周四',
+          5: '周五',
+          6: '周六',
+          7: '周日'
+        };
+        chartLabels = usageRes.data.map(d => weekLabels[d.dayOfWeek] || d.date || '');
         chartRates = usageRes.data.map(d => d.rate);
       }
     } catch {
