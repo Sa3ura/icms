@@ -1,0 +1,47 @@
+name: Deploy Web
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'ICMS-frontend/**'
+      - '.github/workflows/deploy-web.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-web
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Install SSH key
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p "${{ secrets.SSH_PORT }}" -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Preflight (remote has new commit?)
+        run: |
+          ssh -i ~/.ssh/deploy_key -p "${{ secrets.SSH_PORT }}" \
+            -o BatchMode=yes -o ConnectTimeout=15 \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" -- --check
+
+      - name: Deploy on server
+        run: |
+          ssh -i ~/.ssh/deploy_key -p "${{ secrets.SSH_PORT }}" \
+            -o BatchMode=yes -o ConnectTimeout=15 -o ServerAliveInterval=15 \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" -- --force
+
+      - name: Smoke test
+        run: |
+          for i in 1 2 3 4 5; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' -m 10 https://icms.unjust.cn/index.html)
+            echo "attempt $i -> $code"
+            [ "$code" = "200" ] && exit 0
+            sleep 3
+          done
+          echo "站点未返回 200"; exit 1
