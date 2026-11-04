@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { apiLogin, setToken, request } from '../api';
 
 const USE_MOCK = import.meta.env.VITE_USE_MOCK !== 'false';
+let themeTransitionTimer = null;
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -74,7 +75,8 @@ export const useUserStore = defineStore('user', {
         root.classList.remove('dark');
       }
 
-      setTimeout(() => {
+      clearTimeout(themeTransitionTimer);
+      themeTransitionTimer = setTimeout(() => {
         root.classList.remove('theme-transitioning');
       }, 400);
     },
