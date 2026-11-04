@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" fill="none" role="img" aria-labelledby="title desc">
+  <title id="title">ICMS 标志</title>
+  <desc id="desc">以字母 C 为轮廓的教室平面图，内含四个座位和一个薄荷绿连接节点。</desc>
+  <defs>
+    <linearGradient id="surface" x1="8" y1="0" x2="120" y2="128" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#252D55"/>
+      <stop offset="1" stop-color="#101628"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="32" fill="url(#surface)"/>
+  <rect x="1" y="1" width="126" height="126" rx="31" stroke="#A5B4FC" stroke-opacity=".18" stroke-width="2"/>
+  <path d="M93 34H48C40.268 34 34 40.268 34 48V80C34 87.732 40.268 94 48 94H93" stroke="#EEF2FF" stroke-width="9" stroke-linecap="round"/>
+  <rect x="52" y="51" width="11" height="11" rx="3" fill="#A5B4FC"/>
+  <rect x="71" y="51" width="11" height="11" rx="3" fill="#A5B4FC"/>
+  <rect x="52" y="70" width="11" height="11" rx="3" fill="#A5B4FC"/>
+  <rect x="71" y="70" width="11" height="11" rx="3" fill="#A5B4FC"/>
+  <path d="M93 34V55" stroke="#5EEAD4" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="93" cy="59" r="7" fill="#5EEAD4"/>
+</svg>
