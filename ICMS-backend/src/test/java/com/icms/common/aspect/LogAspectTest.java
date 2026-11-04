@@ -5,12 +5,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.icms.common.annotation.Log;
 import com.icms.entity.OperationLog;
 import com.icms.service.OperationLogService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -19,10 +22,14 @@ import java.lang.reflect.Method;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 class LogAspectTest {
@@ -78,6 +85,51 @@ class LogAspectTest {
         OperationLog saved = captor.getValue();
         assertEquals(1L, saved.getUserId());
         assertEquals("admin", saved.getUsername());
+    }
+
+    @Test
+    void logoutLoggingDoesNotAccessServletResponse() throws Throwable {
+        OperationLogService operationLogService = mock(OperationLogService.class);
+        LogAspect aspect = newAspect(operationLogService);
+        ProceedingJoinPoint joinPoint = mock(ProceedingJoinPoint.class);
+        MockHttpServletResponse response = spy(new MockHttpServletResponse());
+        when(joinPoint.getArgs()).thenReturn(new Object[]{response});
+        when(joinPoint.proceed()).thenReturn("logged out");
+        setRequest("POST", "/api/auth/logout", "198.51.100.10");
+
+        try (MockedStatic<StpUtil> stp = mockStatic(StpUtil.class)) {
+            assertEquals("logged out", aspect.doAround(joinPoint, logAnnotation()));
+        }
+
+        verify(response, never()).getWriter();
+        verify(response, never()).getOutputStream();
+        new ObjectMapper().writeValue(response.getOutputStream(), Map.of("code", 200));
+        assertEquals("{\"code\":200}", response.getContentAsString());
+        ArgumentCaptor<OperationLog> captor = ArgumentCaptor.forClass(OperationLog.class);
+        verify(operationLogService).save(captor.capture());
+        assertNull(captor.getValue().getRequestParams());
+        assertEquals("success", captor.getValue().getResultStatus());
+    }
+
+    @Test
+    void recordsBusinessParametersWithoutAccessingServletArguments() throws Throwable {
+        OperationLogService operationLogService = mock(OperationLogService.class);
+        LogAspect aspect = newAspect(operationLogService);
+        ProceedingJoinPoint joinPoint = mock(ProceedingJoinPoint.class);
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpServletResponse response = mock(HttpServletResponse.class);
+        Map<String, String> body = Map.of("title", "test notice");
+        when(joinPoint.getArgs()).thenReturn(new Object[]{request, response, body});
+        setRequest("POST", "/api/notices", "198.51.100.10");
+
+        try (MockedStatic<StpUtil> stp = mockStatic(StpUtil.class)) {
+            aspect.doAround(joinPoint, logAnnotation());
+        }
+
+        verifyNoInteractions(request, response);
+        ArgumentCaptor<OperationLog> captor = ArgumentCaptor.forClass(OperationLog.class);
+        verify(operationLogService).save(captor.capture());
+        assertEquals(new ObjectMapper().writeValueAsString(body), captor.getValue().getRequestParams());
     }
 
     @Test

@@ -73,20 +73,7 @@
 
         <div class="header-right">
           <!-- 主题切换 -->
-          <el-tooltip
-            :content="userStore.theme === 'dark' ? '切回明亮' : '切回暗黑'"
-            placement="bottom"
-          >
-            <div
-              class="action-btn hover-bg"
-              @click="toggleTheme"
-            >
-              <el-icon size="18">
-                <Sunny v-if="userStore.theme === 'dark'" />
-                <Moon v-else />
-              </el-icon>
-            </div>
-          </el-tooltip>
+          <ThemeToggle />
 
           <!-- 消息通知 -->
           <el-dropdown
@@ -244,6 +231,7 @@
           </transition>
         </router-view>
       </el-main>
+      <IcpFooter class="layout-footer" />
       <el-backtop
         target=".content-main"
         :right="40"
@@ -368,6 +356,8 @@ import { useRoute, useRouter } from 'vue-router';
 import { useUserStore } from '../store/user';
 import { ElMessage } from 'element-plus';
 import { apiGetNotices, apiChangePassword, apiMarkNoticeRead, apiMarkAllNoticesRead } from '../api';
+import IcpFooter from '../components/IcpFooter.vue';
+import ThemeToggle from '../components/ThemeToggle.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -434,10 +424,6 @@ const filteredNotices = computed(() => {
   }
   return notices.value;
 });
-
-const toggleTheme = () => {
-  userStore.toggleTheme();
-};
 
 const getRoleName = (role) => {
   const mapping = {
@@ -604,6 +590,11 @@ onUnmounted(() => {
   flex-direction: column;
   overflow: hidden;
   position: relative;
+}
+
+.layout-footer {
+  border-top: 1px solid var(--border-light);
+  background-color: var(--bg-app);
 }
 
 .header-area {

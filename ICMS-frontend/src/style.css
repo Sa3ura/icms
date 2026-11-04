@@ -1,6 +1,7 @@
 /* ICMS 现代极简设计系统 (Modern Minimalist Design) */
 
 :root {
+  color-scheme: light;
   /* 极简色彩体系 - 纯净、克制 */
   --primary-color: #000000; /* 极致的黑作为主色，配合大量的留白 */
   --primary-hover: #333333;
@@ -43,6 +44,7 @@
 
 /* 暗黑模式配置 (保持极简高反差) */
 html.dark {
+  color-scheme: dark;
   --primary-color: #ffffff;
   --primary-hover: #f3f4f6;
   --primary-light: #1f2937;

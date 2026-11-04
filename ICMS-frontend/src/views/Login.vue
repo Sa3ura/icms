@@ -1,11 +1,18 @@
 <template>
-  <div class="login-wrapper">
+  <div
+    class="login-wrapper"
+    :class="{ 'is-dark': userStore.theme === 'dark' }"
+  >
     <!-- 全屏氛围背景：渐变光斑 + 网格 -->
     <div class="bg-layer">
       <div class="bg-blob blob-1" />
       <div class="bg-blob blob-2" />
       <div class="bg-blob blob-3" />
       <div class="bg-grid" />
+    </div>
+
+    <div class="login-toolbar">
+      <ThemeToggle />
     </div>
 
     <!-- 毛玻璃登录浮层 -->
@@ -166,6 +173,7 @@
         </div>
       </div>
     </div>
+    <IcpFooter class="login-footer" />
   </div>
 </template>
 
@@ -175,6 +183,8 @@ import { useRouter } from 'vue-router';
 import { useUserStore } from '../store/user';
 import { apiGetCaptcha } from '../api';
 import { ElMessage } from 'element-plus';
+import IcpFooter from '../components/IcpFooter.vue';
+import ThemeToggle from '../components/ThemeToggle.vue';
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -264,14 +274,30 @@ onMounted(() => {
 /* ============ 全屏氛围背景 ============ */
 .login-wrapper {
   position: relative;
-  height: 100vh;
+  min-height: 100vh;
+  min-height: 100svh;
   width: 100vw;
   overflow: hidden;
   display: flex;
+  flex-shrink: 0;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 24px;
+  padding: 64px 24px 0;
   background-color: var(--bg-app);
+}
+
+.login-toolbar {
+  position: absolute;
+  top: 16px;
+  right: 24px;
+  z-index: 2;
+}
+
+.login-footer {
+  position: relative;
+  z-index: 1;
+  margin-top: 24px;
 }
 
 .bg-layer {
@@ -300,7 +326,7 @@ onMounted(() => {
   filter: blur(90px);
   opacity: 0.5;
 }
-html.dark .bg-blob { opacity: 0.4; }
+.login-wrapper.is-dark .bg-blob { opacity: 0.4; }
 
 .blob-1 {
   width: 520px;
@@ -344,6 +370,8 @@ html.dark .bg-blob { opacity: 0.4; }
 .glass-card {
   position: relative;
   z-index: 1;
+  flex-shrink: 0;
+  margin: auto 0;
   width: 100%;
   max-width: 420px;
   padding: 44px 40px 36px;
@@ -419,7 +447,7 @@ html.dark .bg-blob { opacity: 0.4; }
   height: 48px;
   transition: all 0.2s ease;
 }
-html.dark .glass-form :deep(.el-input__wrapper) {
+.login-wrapper.is-dark .glass-form :deep(.el-input__wrapper) {
   background-color: rgba(255, 255, 255, 0.04) !important;
 }
 .glass-form :deep(.el-input__wrapper.is-focus) {

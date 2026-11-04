@@ -212,7 +212,19 @@ export const apiGetClassrooms = ({ page = 1, pageSize = 10, ...query } = {}) => 
 
 export const apiSaveClassroom = (classroom, username) => {
   if (!USE_MOCK) {
-    return request.post('/api/classrooms', classroom);
+    return request.post('/api/classrooms', {
+      id: classroom.id,
+      campusId: classroom.campus_id,
+      buildingId: classroom.building_id,
+      floorNo: classroom.floor_no,
+      roomNo: classroom.room_no,
+      name: classroom.name,
+      capacity: classroom.capacity,
+      roomType: classroom.room_type,
+      status: classroom.status,
+      openTime: classroom.open_time,
+      description: classroom.description
+    });
   }
   
   return mockRequest('saveClassroom', () => {
@@ -484,7 +496,18 @@ export const apiGetDevices = ({ page = 1, pageSize = 10, ...query } = {}) => {
 
 export const apiSaveDevice = (device, username) => {
   if (!USE_MOCK) {
-    return request.post('/api/devices', device);
+    return request.post('/api/devices', {
+      id: device.id,
+      classroomId: device.classroom_id,
+      deviceCode: device.device_code,
+      deviceName: device.device_name,
+      deviceType: device.device_type,
+      brand: device.brand,
+      model: device.model,
+      status: device.status,
+      purchaseDate: device.purchase_date,
+      lastCheckTime: device.last_check_time
+    });
   }
   
   return mockRequest('saveDevice', () => {
@@ -536,7 +559,13 @@ export const apiGetWorkOrders = ({ page = 1, pageSize = 10, ...query } = {}) => 
 
 export const apiCreateWorkOrder = (workOrder, username) => {
   if (!USE_MOCK) {
-    return request.post('/api/work-orders', workOrder);
+    return request.post('/api/work-orders', {
+      classroomId: workOrder.classroom_id,
+      deviceId: workOrder.device_id,
+      faultTitle: workOrder.fault_title,
+      faultDescription: workOrder.fault_description,
+      faultLevel: workOrder.fault_level
+    });
   }
   
   return mockRequest('createWorkOrder', () => {
@@ -676,7 +705,14 @@ export const apiGetNotices = ({ page = 1, pageSize = 10, ...query } = {}) => {
 
 export const apiSaveNotice = (notice, username) => {
   if (!USE_MOCK) {
-    return request.post('/api/notices', notice);
+    return request.post('/api/notices', {
+      id: notice.id,
+      title: notice.title,
+      content: notice.content,
+      noticeType: notice.notice_type,
+      targetRole: notice.target_role,
+      status: notice.status
+    });
   }
 
   return mockRequest('saveNotice', () => {
@@ -768,7 +804,16 @@ export const apiGetUsers = ({ page = 1, pageSize = 10, ...query } = {}) => {
 
 export const apiSaveUser = (user, username) => {
   if (!USE_MOCK) {
-    return request.post('/api/users', user);
+    return request.post('/api/users', {
+      id: user.id,
+      username: user.username,
+      realName: user.real_name,
+      userType: user.user_type,
+      phone: user.phone,
+      email: user.email,
+      status: user.status,
+      password: user.password
+    });
   }
   
   return mockRequest('saveUser', () => {
@@ -849,7 +894,21 @@ export const apiGetSchedules = ({ page = 1, pageSize = 10, ...query } = {}) => {
 
 export const apiSaveSchedule = (schedule, username) => {
   if (!USE_MOCK) {
-    return request.post('/api/schedules', schedule);
+    return request.post('/api/schedules', {
+      id: schedule.id,
+      semester: schedule.semester,
+      weekNo: schedule.week_no,
+      weekday: schedule.weekday,
+      startSection: schedule.start_section,
+      endSection: schedule.end_section,
+      classroomId: schedule.classroom_id,
+      courseCode: schedule.course_code,
+      courseName: schedule.course_name,
+      teacherId: schedule.teacher_id,
+      className: schedule.class_name,
+      studentCount: schedule.student_count,
+      status: schedule.status
+    });
   }
   
   return mockRequest('saveSchedule', () => {

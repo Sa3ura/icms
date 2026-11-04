@@ -224,7 +224,7 @@
 
 ---
 
-## 六、质量保障 — 测试与基础设施 (4 项，3/4 已完成)
+## 六、质量保障 — 测试与基础设施 (4 项，4/4 已完成)
 
 > **定义**：质量保障手段，证明系统可靠性。
 
@@ -233,7 +233,7 @@
 | 1 | ✅ 单元测试已引入 | 后端 17 个 JUnit5 测试（含 AuthController 安全测试 5 个）；前端引入 vitest，20 个用例覆盖 composables + mappings | `mvnw.cmd test` / `npm test` 全部通过 |
 | 2 | ✅ E2E 测试已引入 | 6 条 Playwright 流程（登录/预约/审批/工单/用户管理）+ 录屏截图 | `npm run test:e2e` 6/6 全部通过 |
 | 3 | ✅ CI/CD 已引入 | GitHub Actions，push/PR 触发：后端 test + 前端 lint/build/test + E2E，报告 artifact | `.github/workflows/ci.yml`，3 job 并行 |
-| 4 | 无错误监控 | 无 Sentry / 自定义埋点 | 接入 `@sentry/vue`，错误边界捕获未处理异常并上报 |
+| 4 | ✅ 错误监控已接入 | 前端 `@sentry/vue` 已在 `main.js` 初始化并捕获全局异常；后端 `GlobalExceptionHandler` 已调用 `Sentry.captureException` 上报系统异常 | 后续补充 Sentry Release、Source Map、告警规则和采样策略 |
 
 ---
 
@@ -277,7 +277,7 @@
 14. vitest 单元测试
 15. Playwright E2E
 16. CI/CD pipeline
-17. Sentry 监控
+17. Sentry 深化（Release / Source Map / 告警规则）
 ```
 
 ---
@@ -299,7 +299,7 @@
 
 > 致命缺陷 (4/4) 全部清零。Dashboard 真实数据已接入 (`/api/stats/weekly-usage`)。
 
-> S1 零项、S2 七项、S3 三项全部完成。剩余 S4 长期基建 (测试/CI/CD/监控)。
+> S1 零项、S2 七项、S3 三项全部完成。测试、CI/CD 与 Sentry 错误监控已接入；剩余 S4 为 Release、Source Map、告警规则等监控深化。
 
 > 全系统 **0 编译/构建错误**。Knife4j 文档已覆盖 11 模块/40 接口 (`http://localhost:8080/doc.html`)。前端 `npm run dev` 演示。后端需 MySQL 后 `mvnw.cmd spring-boot:run` 启动。Flyway 管理 DDL，SaToken 管理认证与鉴权。
 

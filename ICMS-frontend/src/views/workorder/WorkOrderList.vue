@@ -763,6 +763,8 @@ const submitCreate = () => {
           ElMessage.success('工单上报提交成功！');
           createDialogVisible.value = false;
           loadData();
+        } else {
+          ElMessage.error(res.message || '\u5de5\u5355\u63d0\u4ea4\u5931\u8d25');
         }
       } catch (error) {
         ElMessage.error(error.message);

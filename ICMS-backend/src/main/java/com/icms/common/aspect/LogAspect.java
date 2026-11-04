@@ -6,6 +6,8 @@ import com.icms.common.annotation.Log;
 import com.icms.common.util.RequestClientUtil;
 import com.icms.entity.OperationLog;
 import com.icms.service.OperationLogService;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -47,8 +49,15 @@ public class LogAspect {
 
         try {
             Object[] args = joinPoint.getArgs();
-            if (args != null && args.length > 0) {
-                opLog.setRequestParams(objectMapper.writeValueAsString(args[0]));
+            if (args != null) {
+                for (Object arg : args) {
+                    // Servlet getter 可能打开请求/响应流，不能作为业务参数序列化。
+                    if (arg instanceof ServletRequest || arg instanceof ServletResponse) {
+                        continue;
+                    }
+                    opLog.setRequestParams(objectMapper.writeValueAsString(arg));
+                    break;
+                }
             }
         } catch (Exception e) {
             opLog.setRequestParams("[Serialization Failed]");
