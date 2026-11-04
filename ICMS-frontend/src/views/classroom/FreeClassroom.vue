@@ -750,4 +750,23 @@ html.dark .schedule-block.reservation {
   margin-top: 2px;
   text-align: center;
 }
+
+@media (max-width: 767px) {
+  .classroom-card {
+    height: auto;
+    min-height: 210px;
+  }
+
+  .classroom-card :deep(.el-card__body) {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+  }
+
+  .room-meta,
+  .room-footer {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
 </style>

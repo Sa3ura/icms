@@ -2,6 +2,8 @@
   <el-container class="layout-container">
     <!-- 侧边栏 (极简无界设计) -->
     <el-aside
+      v-if="!isMobile"
+      id="desktop-navigation"
       :width="isCollapsed ? '80px' : '260px'"
       class="aside-menu"
     >
@@ -51,17 +53,30 @@
       <!-- 顶部 Header (轻薄悬浮感) -->
       <el-header class="header-area glass-header">
         <div class="header-left">
-          <div
+          <button
+            type="button"
             class="collapse-btn hover-bg"
-            @click="isCollapsed = !isCollapsed"
+            :aria-label="isMobile ? '打开导航菜单' : isCollapsed ? '展开侧栏' : '收起侧栏'"
+            :aria-expanded="isMobile ? mobileMenuOpen : !isCollapsed"
+            :aria-controls="isMobile ? 'mobile-navigation' : 'desktop-navigation'"
+            @click="toggleNavigation"
           >
             <el-icon size="20">
-              <Fold v-if="!isCollapsed" />
+              <Menu v-if="isMobile" />
+              <Fold v-else-if="!isCollapsed" />
               <Expand v-else />
             </el-icon>
-          </div>
+          </button>
+
+          <span
+            v-if="isMobile"
+            class="mobile-page-title"
+          >{{ currentRouteTitle || 'ICMS' }}</span>
           
-          <el-breadcrumb separator="/">
+          <el-breadcrumb
+            v-else
+            separator="/"
+          >
             <el-breadcrumb-item :to="{ path: '/' }">
               Dashboard
             </el-breadcrumb-item>
@@ -80,7 +95,11 @@
             trigger="click"
             placement="bottom-end"
           >
-            <div class="action-btn hover-bg notice-badge">
+            <button
+              type="button"
+              class="action-btn hover-bg notice-badge"
+              :aria-label="`通知中心，${unreadNoticesCount} 条未读`"
+            >
               <el-badge
                 :value="unreadNoticesCount"
                 :max="9"
@@ -93,7 +112,7 @@
                   <Bell />
                 </el-icon>
               </el-badge>
-            </div>
+            </button>
             <template #dropdown>
               <div class="notice-panel">
                 <div class="notice-header">
@@ -184,24 +203,28 @@
             placement="bottom-end"
             @command="handleCommand"
           >
-            <div class="user-profile hover-bg">
+            <button
+              type="button"
+              class="user-profile hover-bg"
+              :aria-label="`账户菜单：${userStore.realName}`"
+            >
               <el-avatar
                 :size="32"
                 class="user-avatar"
               >
                 {{ userStore.realName.charAt(0) }}
               </el-avatar>
-              <div
-                v-if="!isCollapsed"
+              <span
+                v-if="!isCollapsed && !isMobile"
                 class="user-info"
               >
                 <span class="user-name">{{ userStore.realName }}</span>
                 <span class="user-role">{{ getRoleName(userStore.role) }}</span>
-              </div>
+              </span>
               <el-icon class="el-icon--right">
                 <arrow-down />
               </el-icon>
-            </div>
+            </button>
             <template #dropdown>
               <el-dropdown-menu class="user-dropdown-menu">
                 <el-dropdown-item command="password">
@@ -234,10 +257,59 @@
       <IcpFooter class="layout-footer" />
       <el-backtop
         target=".content-main"
-        :right="40"
+        :right="isMobile ? 16 : 40"
         :bottom="40"
       />
     </el-container>
+
+    <el-drawer
+      v-if="isMobile"
+      v-model="mobileMenuOpen"
+      direction="ltr"
+      size="min(82vw, 300px)"
+      :with-header="false"
+      class="mobile-nav-drawer"
+      aria-label="主导航"
+    >
+      <nav
+        id="mobile-navigation"
+        class="mobile-navigation"
+        aria-label="主导航"
+      >
+        <div class="mobile-navigation-header">
+          <span class="mobile-brand"><el-icon :size="24"><School /></el-icon> ICMS</span>
+          <button
+            type="button"
+            class="action-btn hover-bg"
+            aria-label="关闭导航菜单"
+            @click="mobileMenuOpen = false"
+          >
+            <el-icon :size="20">
+              <Close />
+            </el-icon>
+          </button>
+        </div>
+        <el-scrollbar>
+          <el-menu
+            :default-active="activeMenu"
+            router
+            :background-color="menuBg"
+            :text-color="menuTextColor"
+            :active-text-color="menuActiveColor"
+            @select="mobileMenuOpen = false"
+          >
+            <el-menu-item
+              v-for="item in menuRoutes"
+              :key="item.path"
+              :index="'/' + item.path"
+            >
+              <el-icon><component :is="item.meta.icon" /></el-icon>
+              <span>{{ item.meta.title }}</span>
+            </el-menu-item>
+          </el-menu>
+        </el-scrollbar>
+      </nav>
+    </el-drawer>
     
     <!-- 修改密码弹窗 (现代化) -->
     <el-dialog
@@ -351,19 +423,28 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useUserStore } from '../store/user';
 import { ElMessage } from 'element-plus';
 import { apiGetNotices, apiChangePassword, apiMarkNoticeRead, apiMarkAllNoticesRead } from '../api';
 import IcpFooter from '../components/IcpFooter.vue';
 import ThemeToggle from '../components/ThemeToggle.vue';
+import { useMediaQuery } from '../composables/useMediaQuery';
 
 const route = useRoute();
 const router = useRouter();
 const userStore = useUserStore();
 
 const isCollapsed = ref(false);
+const isMobile = useMediaQuery('(max-width: 1023px)');
+const mobileMenuOpen = ref(false);
+const toggleNavigation = () => {
+  if (isMobile.value) mobileMenuOpen.value = !mobileMenuOpen.value;
+  else isCollapsed.value = !isCollapsed.value;
+};
+
+watch([isMobile, () => route.fullPath], () => { mobileMenuOpen.value = false; });
 const pwdDialogVisible = ref(false);
 const noticeDialogVisible = ref(false);
 const currentNotice = ref(null);
@@ -524,7 +605,8 @@ onUnmounted(() => {
 <style scoped>
 .layout-container {
   height: 100vh;
-  width: 100vw;
+  height: 100dvh;
+  width: 100%;
   overflow: hidden;
   background-color: var(--bg-app);
 }
@@ -585,7 +667,8 @@ onUnmounted(() => {
 
 /* 顶部 Header */
 .main-container {
-  height: 100vh;
+  height: 100%;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -617,6 +700,30 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 16px;
+}
+
+.header-left {
+  min-width: 0;
+}
+
+.header-right {
+  flex-shrink: 0;
+}
+
+.collapse-btn,
+.action-btn,
+.user-profile {
+  border: 0;
+  background: transparent;
+  color: var(--text-regular);
+  font: inherit;
+}
+
+.collapse-btn:focus-visible,
+.action-btn:focus-visible,
+.user-profile:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
 }
 
 /* 交互按钮统一抽象 */
@@ -703,6 +810,7 @@ onUnmounted(() => {
 /* 通知下拉菜单重构 */
 .notice-panel {
   width: 360px;
+  max-width: calc(100vw - 24px);
   background-color: var(--bg-card);
   border-radius: 16px;
   border: 1px solid var(--border-light);
@@ -881,8 +989,118 @@ onUnmounted(() => {
 /* 内容区 */
 .content-main {
   flex-grow: 1;
+  min-width: 0;
+  min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
   background-color: transparent;
+}
+
+:global(.mobile-nav-drawer) {
+  background-color: var(--bg-sidebar);
+}
+
+:global(.mobile-nav-drawer .el-drawer__body) {
+  padding: 0;
+  overflow: hidden;
+}
+
+.mobile-navigation {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.mobile-navigation :deep(.el-scrollbar) {
+  flex: 1;
+  min-height: 0;
+}
+
+.mobile-navigation-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 64px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.mobile-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+@media (max-width: 1023px) {
+  .header-area {
+    height: 60px;
+    padding: 0 max(12px, env(safe-area-inset-right, 0px)) 0 max(12px, env(safe-area-inset-left, 0px));
+    gap: 8px;
+  }
+
+  .header-left {
+    flex: 1;
+    gap: 4px;
+    overflow: hidden;
+  }
+
+  .header-right {
+    gap: 4px;
+  }
+
+  .collapse-btn,
+  .action-btn,
+  .user-profile {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    padding: 0;
+    margin: 0;
+  }
+
+  .user-profile {
+    justify-content: center;
+  }
+
+  .user-profile > .el-icon,
+  .divider-v {
+    display: none;
+  }
+
+  .mobile-page-title {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text-main);
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .content-main {
+    padding: 16px max(16px, env(safe-area-inset-right, 0px)) 20px max(16px, env(safe-area-inset-left, 0px));
+    overscroll-behavior-y: contain;
+  }
+
+  .layout-footer {
+    padding-top: 8px;
+    padding-bottom: max(8px, env(safe-area-inset-bottom, 0px));
+    font-size: 11px;
+  }
+
+  .notice-header {
+    flex-wrap: wrap;
+    padding: 12px;
+  }
+
+  .notice-header-actions {
+    flex: none;
+    margin-left: auto;
+  }
 }
 </style>

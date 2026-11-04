@@ -393,3 +393,207 @@ html {
   color: var(--primary-color) !important;
   font-weight: 600;
 }
+
+html.dark .el-pagination.is-background .el-pager li.is-active {
+  color: var(--bg-app);
+}
+
+/* 手机端：内容使用完整宽度，长表格在组件内部滚动。 */
+@media (max-width: 767px) {
+  .page-container {
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    padding: 0;
+  }
+
+  .page-container .el-col,
+  .page-container .el-card,
+  .page-container .el-card__body {
+    min-width: 0;
+  }
+
+  .page-container > .el-row {
+    row-gap: 12px;
+  }
+
+  .el-card__header {
+    padding: 14px 16px !important;
+    font-size: 15px;
+  }
+
+  .el-card__body {
+    padding: 16px !important;
+  }
+
+  .card-header-flex {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .filter-card .el-form--inline {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 12px;
+  }
+
+  .filter-card .el-form-item,
+  .el-dialog .el-form-item {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-card .el-form--inline .el-form-item {
+    width: 100%;
+    margin: 0;
+  }
+
+  .filter-card .el-form-item:has(.el-date-editor--daterange),
+  .filter-card .el-form-item:has(.el-button),
+  .filter-card .el-form-item.right-alert {
+    grid-column: 1 / -1;
+  }
+
+  .filter-card .el-form-item__label,
+  .el-dialog .el-form-item__label {
+    justify-content: flex-start;
+    width: auto !important;
+    height: auto;
+    padding: 0 0 6px !important;
+    line-height: 1.5;
+    text-align: left;
+  }
+
+  .filter-card .el-form-item__content,
+  .el-dialog .el-form-item__content {
+    min-width: 0;
+    width: 100%;
+    margin-left: 0 !important;
+  }
+
+  .filter-card .el-select,
+  .filter-card .el-input,
+  .filter-card .el-input-number,
+  .filter-card .el-date-editor,
+  .el-dialog .el-select,
+  .el-dialog .el-input,
+  .el-dialog .el-input-number,
+  .el-dialog .el-date-editor {
+    min-width: 0;
+    max-width: 100%;
+    width: 100% !important;
+  }
+
+  .section-picker-row {
+    display: flex;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .section-picker-row .el-select {
+    flex: 1;
+    min-width: 0;
+    width: 0 !important;
+  }
+
+  .section-picker-row .range-separator {
+    flex-shrink: 0;
+  }
+
+  .el-input__inner,
+  .el-select__placeholder,
+  .el-range-input,
+  .el-textarea__inner {
+    font-size: 16px;
+  }
+
+  .page-container .table-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .page-container .table-actions .el-button + .el-button {
+    margin-left: 0;
+  }
+
+  .el-pagination {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 8px;
+    white-space: normal;
+  }
+
+  .el-pagination .el-pagination__sizes,
+  .el-pagination .el-pagination__total,
+  .el-pagination .el-pagination__jump {
+    margin: 0;
+  }
+
+  .el-dialog {
+    max-width: calc(100vw - 24px);
+    margin: 12px auto !important;
+    padding: 0;
+  }
+
+  .el-dialog__header {
+    padding: 16px 44px 14px 16px !important;
+  }
+
+  .el-dialog__body {
+    padding: 16px !important;
+    overflow-wrap: anywhere;
+  }
+
+  .el-dialog__footer {
+    padding: 0 16px 16px;
+  }
+
+  .el-dialog .el-radio-group,
+  .el-dialog .el-checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .el-dialog .el-descriptions__table {
+    table-layout: fixed;
+  }
+
+  .el-date-picker,
+  .el-date-range-picker {
+    width: min(322px, calc(100vw - 24px)) !important;
+    max-height: calc(100dvh - 24px);
+    overflow-y: auto;
+  }
+
+  .el-date-range-picker .el-picker-panel__body {
+    min-width: 0;
+  }
+
+  .el-date-range-picker__content {
+    display: block;
+    width: 100%;
+    padding: 12px;
+  }
+
+  .el-date-range-picker__content.is-left {
+    border-right: 0;
+    border-bottom: 1px solid var(--el-border-color-light);
+  }
+
+  .el-date-picker .el-picker-panel__content {
+    width: auto;
+    margin: 12px;
+  }
+
+  .environment-container .filter-card .right-alert {
+    float: none;
+  }
+
+  .environment-container .chart-box {
+    height: 250px;
+  }
+}

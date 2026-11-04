@@ -15,7 +15,7 @@
       <el-col
         v-for="card in statCards"
         :key="card.title"
-        :xs="24"
+        :xs="12"
         :sm="12"
         :md="6"
       >
@@ -182,7 +182,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, onUnmounted } from 'vue';
+import { ref, computed, onMounted, watch, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '../../store/user';
 import * as echarts from 'echarts/core';
@@ -221,6 +221,10 @@ const lineChartRef = ref(null);
 const pieChartRef = ref(null);
 let lineChart = null;
 let pieChart = null;
+let resizeObserver = null;
+let resizeFrame = null;
+let isMounted = false;
+let chartGeneration = 0;
 
 const statCards = computed(() => [
   { 
@@ -331,6 +335,9 @@ const loadTodayTable = async () => {
 };
 
 const updateCharts = async () => {
+  if (!isMounted) return;
+  const generation = ++chartGeneration;
+  const isCurrent = () => isMounted && generation === chartGeneration;
   const isDark = userStore.theme === 'dark';
   const textColor = isDark ? '#9ca3af' : '#6b7280';
   const axisColor = isDark ? '#374151' : '#f3f4f6';
@@ -355,10 +362,12 @@ const updateCharts = async () => {
         chartLabels = usageRes.data.map(d => weekLabels[d.dayOfWeek] || d.date || '');
         chartRates = usageRes.data.map(d => d.rate);
       }
-    } catch {
+    } catch (error) {
+      console.error('获取空间活跃度失败', error);
       chartRates = [0, 0, 0, 0, 0, 0, 0];
       chartLabels = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
     }
+    if (!isCurrent()) return;
 
     const lineOption = {
       tooltip: {
@@ -368,7 +377,7 @@ const updateCharts = async () => {
         textStyle: { color: isDark ? '#f9fafb' : '#111827' },
         formatter: '{b} <br/>使用率 : {c}%'
       },
-      grid: { left: '2%', right: '2%', bottom: '0%', top: '15%', outerBounds: false },
+      grid: { left: 8, right: 12, bottom: 0, top: 24, containLabel: true },
       xAxis: {
         type: 'category',
         boundaryGap: false,
@@ -409,6 +418,7 @@ const updateCharts = async () => {
     if (!pieChart) pieChart = echarts.init(pieChartRef.value);
 
     const devRes = await apiGetDevices({ pageSize: 10000 });
+    if (!isCurrent()) return;
     let normal = 0, fault = 0, repairing = 0, scrapped = 0;
     if (devRes.code === 200) {
       devRes.data.records.forEach(d => {
@@ -462,21 +472,34 @@ const updateCharts = async () => {
 };
 
 const handleResize = () => {
-  lineChart?.resize();
-  pieChart?.resize();
+  if (resizeFrame !== null) return;
+  resizeFrame = window.requestAnimationFrame(() => {
+    resizeFrame = null;
+    lineChart?.resize();
+    pieChart?.resize();
+  });
 };
 
 watch(() => userStore.theme, () => { updateCharts(); });
 
 onMounted(() => {
+  isMounted = true;
   loadStats();
   loadTodayTable();
   updateCharts();
   window.addEventListener('resize', handleResize);
+  resizeObserver = new ResizeObserver(handleResize);
+  [lineChartRef.value, pieChartRef.value].forEach(element => {
+    if (element) resizeObserver.observe(element);
+  });
 });
 
-onUnmounted(() => {
+onBeforeUnmount(() => {
+  isMounted = false;
+  chartGeneration++;
   window.removeEventListener('resize', handleResize);
+  resizeObserver?.disconnect();
+  if (resizeFrame !== null) window.cancelAnimationFrame(resizeFrame);
   lineChart?.dispose();
   lineChart = null;
   pieChart?.dispose();
@@ -485,6 +508,10 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.dashboard-container {
+  min-width: 0;
+}
+
 .welcome-header {
   margin-bottom: 40px;
 }
@@ -502,6 +529,7 @@ onUnmounted(() => {
 
 .metric-row {
   margin-bottom: 24px;
+  row-gap: 24px;
 }
 .metric-card {
   cursor: pointer;
@@ -533,6 +561,10 @@ onUnmounted(() => {
 
 .chart-row {
   margin-bottom: 24px;
+  row-gap: 24px;
+}
+.chart-row > .el-col {
+  min-width: 0;
 }
 .chart-box {
   height: 340px;
@@ -555,5 +587,107 @@ onUnmounted(() => {
 .time-tip {
   font-size: 12px;
   color: var(--text-secondary);
+}
+
+@media (max-width: 767px) {
+  .welcome-header {
+    margin-bottom: 20px;
+  }
+
+  .welcome-header h2 {
+    font-size: 22px;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+  }
+
+  .subtitle {
+    font-size: 13px;
+    line-height: 1.7;
+  }
+
+  .metric-row {
+    margin-right: -6px !important;
+    margin-bottom: 20px;
+    margin-left: -6px !important;
+    row-gap: 12px;
+  }
+
+  .metric-row > .el-col {
+    min-width: 0;
+    padding-right: 6px !important;
+    padding-left: 6px !important;
+  }
+
+  .metric-card {
+    height: 100%;
+    padding: 0;
+  }
+
+  .metric-card :deep(.el-card__body) {
+    padding: 12px;
+  }
+
+  .metric-content {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 32px;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .metric-left {
+    display: contents;
+  }
+
+  .metric-title {
+    grid-column: 1 / -1;
+    margin-bottom: 0;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .metric-value {
+    min-width: 0;
+    font-size: 28px;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+
+  .metric-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+  }
+
+  .metric-icon :deep(.el-icon) {
+    font-size: 18px !important;
+  }
+
+  .chart-row {
+    margin-bottom: 20px;
+    row-gap: 16px;
+  }
+
+  .chart-box {
+    height: 240px;
+  }
+
+  .card-header-flex {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .card-header-flex > span {
+    min-width: 0;
+    font-size: 14px;
+  }
+
+  .card-header-flex :deep(.el-radio-group),
+  .card-header-flex > .el-button {
+    flex-shrink: 0;
+  }
+
+  .table-card {
+    min-width: 0;
+  }
 }
 </style>

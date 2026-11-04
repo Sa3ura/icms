@@ -204,7 +204,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, onUnmounted, watch } from 'vue';
 import { useUserStore } from '../../store/user';
 import { ElMessage } from 'element-plus';
 import * as echarts from 'echarts/core';
@@ -246,6 +246,9 @@ const tempHumChartRef = ref(null);
 const airChartRef = ref(null);
 let tempHumChart = null;
 let airChart = null;
+let isActive = false;
+let resizeObserver = null;
+let resizeFrame = null;
 
 // 指标状态判定
 const environmentMetrics = computed(() => {
@@ -304,6 +307,7 @@ const environmentMetrics = computed(() => {
 
 // 加载温湿度与空气质量图表
 const drawCharts = () => {
+  if (!isActive) return;
   const isDark = userStore.theme === 'dark';
   const textColor = isDark ? '#cbd5e1' : '#475569';
   const borderColor = isDark ? '#334155' : '#e2e8f0';
@@ -323,7 +327,7 @@ const drawCharts = () => {
         borderColor: borderColor
       },
       legend: { textStyle: { color: textColor } },
-      grid: { left: '3%', right: '4%', bottom: '3%', outerBounds: false },
+      grid: { left: 8, right: 8, bottom: 8, top: 64, containLabel: true },
       xAxis: {
         type: 'category',
         data: timeData,
@@ -377,7 +381,7 @@ const drawCharts = () => {
         borderColor: borderColor
       },
       legend: { textStyle: { color: textColor } },
-      grid: { left: '3%', right: '4%', bottom: '3%', outerBounds: false },
+      grid: { left: 8, right: 8, bottom: 8, top: 64, containLabel: true },
       xAxis: {
         type: 'category',
         data: timeData,
@@ -423,6 +427,7 @@ const loadEnvData = async () => {
   loading.value = true;
   try {
     const res = await apiGetEnvironmentData(selectedClassroomId.value);
+    if (!isActive) return;
     if (res.code === 200) {
       currentEnv.value = res.data.current;
       trendList.value = res.data.trend;
@@ -436,8 +441,12 @@ const loadEnvData = async () => {
 };
 
 const handleResize = () => {
-  tempHumChart?.resize();
-  airChart?.resize();
+  if (resizeFrame !== null) return;
+  resizeFrame = window.requestAnimationFrame(() => {
+    resizeFrame = null;
+    tempHumChart?.resize();
+    airChart?.resize();
+  });
 };
 
 watch(() => userStore.theme, () => {
@@ -445,17 +454,27 @@ watch(() => userStore.theme, () => {
 });
 
 onMounted(async () => {
+  isActive = true;
+  window.addEventListener('resize', handleResize);
+  resizeObserver = new ResizeObserver(handleResize);
+  [tempHumChartRef.value, airChartRef.value].forEach(element => {
+    if (element) resizeObserver.observe(element);
+  });
   const roomRes = await apiGetClassrooms({ pageSize: 10000 });
+  if (!isActive) return;
   if (roomRes.code === 200 && roomRes.data.records.length > 0) {
     classrooms.value = roomRes.data.records;
     selectedClassroomId.value = roomRes.data.records[0].id;
     await loadEnvData();
   }
-  window.addEventListener('resize', handleResize);
 });
+
+onBeforeUnmount(() => { isActive = false; });
 
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize);
+  resizeObserver?.disconnect();
+  if (resizeFrame !== null) window.cancelAnimationFrame(resizeFrame);
   tempHumChart?.dispose();
   tempHumChart = null;
   airChart?.dispose();

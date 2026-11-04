@@ -495,12 +495,12 @@
       <div class="details-box">
         <el-descriptions
           title="工单基础信息"
-          :column="2"
+          :column="isMobile ? 1 : 2"
           border
         >
           <el-descriptions-item
             label="工单编号"
-            span="2"
+            :span="isMobile ? 1 : 2"
           >
             {{ activeRow?.order_no }}
           </el-descriptions-item>
@@ -523,13 +523,13 @@
           </el-descriptions-item>
           <el-descriptions-item
             label="报修时间"
-            span="2"
+            :span="isMobile ? 1 : 2"
           >
             {{ activeRow?.created_at }}
           </el-descriptions-item>
           <el-descriptions-item
             label="故障描述"
-            span="2"
+            :span="isMobile ? 1 : 2"
           >
             {{ activeRow?.fault_description || '无' }}
           </el-descriptions-item>
@@ -537,7 +537,7 @@
 
         <el-descriptions
           title="处理状态跟踪"
-          :column="2"
+          :column="isMobile ? 1 : 2"
           border
           class="mt-20"
         >
@@ -555,7 +555,7 @@
           <el-descriptions-item
             v-if="activeRow?.handle_result"
             label="处理结果"
-            span="2"
+            :span="isMobile ? 1 : 2"
           >
             <div class="result-box">
               {{ activeRow.handle_result }}
@@ -564,7 +564,7 @@
           <el-descriptions-item
             v-if="activeRow?.finished_at"
             label="完工修复时间"
-            span="2"
+            :span="isMobile ? 1 : 2"
           >
             {{ activeRow.finished_at }}
           </el-descriptions-item>
@@ -594,8 +594,10 @@ import { useFilterSync } from '../../composables/useFilterSync';
 import { useExport } from '../../composables/useExport';
 import { useHmrData } from '../../composables/useHmrData';
 import { useTableSort } from '../../composables/useTableSort';
+import { useMediaQuery } from '../../composables/useMediaQuery';
 
 const userStore = useUserStore();
+const isMobile = useMediaQuery('(max-width: 767px)');
 
 const { exportToExcel } = useExport();
 
