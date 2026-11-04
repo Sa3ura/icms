@@ -3,10 +3,19 @@ node_modules/
 ICMS-frontend/node_modules/
 ICMS-backend/target/
 
+# Downloaded Maven distribution (bootstrapped by mvnw / mvnw.cmd)
+/ICMS-backend/.mvn/apache-maven-*/
+/ICMS-backend/.mvn/maven.zip
+
 # Build output
 dist/
 dist-ssr/
 *.local
+
+# Local exports, presentation sources, diagnostics and deployment archives
+/local/
+/ICMS-frontend/icms-frontend-*.zip
+/ICMS-backend/icms-backend-*.jar
 
 # Python
 __pycache__/
@@ -34,7 +43,13 @@ application-local.yml
 **/application-local.yml
 
 # Logs
+logs/
 *.log
+*.log.*
 
-# OpenCode config
+# Local agent configuration and indexes
+.agents/
+.claude/
+.codegraph/
+/CLAUDE.md
 .opencode/

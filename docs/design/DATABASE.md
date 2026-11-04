@@ -342,4 +342,4 @@ deleted = 1 表示已删除数据
 
 ## 6. 建表 SQL
 
-完整 MySQL 建表脚本已单独提供：`ICMS_database_schema_简体.sql`。
+旧版 MySQL 建表脚本归档于 [database-schema-v1.sql](../archive/database-schema-v1.sql)，仅供设计参考。实际数据库结构以 [Flyway 迁移](../../ICMS-backend/src/main/resources/db/migration/) 为准，新环境无需手动导入旧版脚本。

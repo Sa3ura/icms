@@ -93,8 +93,10 @@ npm run dev:e2e
 | [开发指南](docs/DEVELOPMENT.md) | 项目结构、完整启动、本地账号与常用命令 |
 | [部署指南](docs/DEPLOYMENT.md) | 构建产物、外部配置、OpenResty / Nginx 代理与常见问题 |
 | [测试说明](docs/TEST_CASES.md) | 自动化测试范围、CI 流程与业务用例 |
-| [需求设计](ICMS_需求设计文档.md) | 业务背景与需求设计 |
-| [数据库设计](ICMS_数据库表设计.md) | 数据表与字段说明 |
+| [需求设计](docs/design/REQUIREMENTS.md) | 业务背景与需求设计 |
+| [数据库设计](docs/design/DATABASE.md) | 数据表与字段说明 |
+
+功能清单、页面原型和历史资料见 [文档中心](docs/README.md)。
 
 ---
 

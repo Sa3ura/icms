@@ -17,6 +17,10 @@ ICMS-backend/                  Spring Boot 后端
   src/main/resources/         应用配置与 Flyway 迁移
   src/test/                   后端测试
 docs/                         开发、部署与测试说明
+  design/                     需求、功能、数据库与页面设计
+  archive/                    历史分析与旧版参考 SQL
+  assets/                     Logo、横幅和界面截图
+local/                        本地导出与归档（Git 忽略）
 ```
 
 ## 完整启动
@@ -29,7 +33,7 @@ docs/                         开发、部署与测试说明
 CREATE DATABASE icms DEFAULT CHARACTER SET utf8mb4;
 ```
 
-为项目配置数据库用户。新建空库由 Flyway 自动建表，无需再导入仓库根目录的建表 SQL。
+为项目配置数据库用户。新建空库由 Flyway 自动建表，迁移脚本位于 `ICMS-backend/src/main/resources/db/migration/`；无需手动导入 `docs/archive/` 中的旧版参考 SQL。
 
 ### 2. 配置后端
 
@@ -43,6 +47,8 @@ cd ICMS-backend
 ```
 
 Linux / macOS 使用 `sh mvnw spring-boot:run`。首次执行时脚本会下载 Maven，需要网络；Linux / macOS 还需要 `curl` 或 `wget`，以及 `unzip`。
+
+下载的 Maven 分发包缓存在 `ICMS-backend/.mvn/apache-maven-3.9.6/`，不纳入版本控制；保留 `mvnw`、`mvnw.cmd` 即可在新环境引导安装。
 
 默认端口为 `8080`，开发环境 API 文档入口为 <http://localhost:8080/doc.html>。
 
